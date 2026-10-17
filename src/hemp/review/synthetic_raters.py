@@ -18,8 +18,9 @@ def synthesize_item(
 
     The pattern is a pure function of ``policy.rater_seed``, the lesson ordinal, and the rater
     index. It keeps every score inside the publish band. Clarity is lowered on the first lesson
-    for every rater and on the second lesson for rater 2 only, so pairwise clarity kappa is not
-    1. Safety is copied from the judge. This is not a sample of human raters.
+    for every rater and on the second lesson for rater 2 only. That shift is only for this
+    4-lesson fixture. The agreement computation demo is ``agreement_demo.py``. Safety is copied
+    from the judge. This is not a sample of human raters.
     """
     labels: list[ReviewLabel] = []
     for rater_index in range(item.required_raters):

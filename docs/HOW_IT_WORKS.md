@@ -9,7 +9,7 @@ Pensalo como la redacción de un boletín interno. Hay un redactor, un corrector
 ## El recorrido, paso a paso
 
 1. El curso entra como un archivo: objetivos, nada de magia. El corpus es otra ficha, chica y ficticia, con ids (`F-WAYBILL`, `F-HUB`, y el resto).
-2. El writer (un cassette, no un modelo pago) propone el índice.
+2. El writer es un paso que se reproduce desde un cassette. En el camino por defecto no hay una llamada a un modelo.
 3. Para cada lección, el writer recibe el índice de esa lección y el resumen de lo que ya se aceptó. La primera versión de la lección 2, en el cassette feliz, suelta el dato del hub sin cita. El checker lo ve.
 4. El verifier cassette opina. El checker no le cree: vuelve a mirar si cada claim tiene un id que existe y si el texto se parece a esa ficha (Jaccard de palabras).
 5. El critic cassette devuelve puntajes y un flag `request_revision`. Si el checker no está limpio, o el critic pide otra vuelta, y todavía hay presupuesto (máximo 3 en el curso feliz), se llama otra vez al writer. En el demo, la lección 2 se arregla en la segunda pasada y ahí para.
@@ -31,7 +31,7 @@ El gate de eval no compara la lista de llamadas. Pregunta invariantes: ¿se publ
 | Claim | Una oración que se anima a afirmar algo, con ids de ficha. |
 | Checker | Código. No es otro modelo. |
 | Rúbrica | `rubrics/rubric-v1.json`. Accuracy, clarity, flow, no-redundancy, safety. |
-| Kappa / alpha | Acuerdo entre etiquetas. En este repo las etiquetas son sintéticas. |
+| Kappa / alpha | Métricas de acuerdo. `python -m hemp agreement-demo` las corre sobre 48 ítems sintéticos, con tres confiabilidades documentadas y un intervalo bootstrap. No es un estudio con personas. El curso de 4 lecciones no alcanza para citar un acuerdo. |
 | Gate | `python -m hemp eval`. Si el cassette malo no hace fallar la calidad, el comando de regresión no sale en rojo y CI lo marca. |
 | [EST] | Un número ilustrativo, no medido en un equipo real. |
 
@@ -41,7 +41,8 @@ El gate de eval no compara la lista de llamadas. Pregunta invariantes: ¿se publ
 - No publica afuera. No hay LMS ni mail.
 - No sabe si algo es verdad en el mundo. Sabe si se parece a la ficha y si citaste el id.
 - La página local no tiene login. Es para tu máquina.
-- El kappa de claridad 0.5 del demo está sembrado a propósito. No lo cites como un estudio.
-- El costo en dólares sale de una tarifa inventada. Los tokens sí salen del cassette.
+- El acuerdo que muestra el demo es un computation demo: raters sintéticos, semilla, intervalo. No lo cites como personas. Si más adelante hay etiquetas reales, el camino es el CSV `fixtures/agreement/human_labels_template.csv` y `python -m hemp agreement-import`. Este repo no publica una cifra de acuerdo humano.
+- El costo en dólares sale de una tarifa inventada. Los tokens del demo sí salen del cassette.
+- `python -m hemp live` es optativo y está apagado. Sin `LIVE_MODE=1` y el resto de la configuración sale con código 2 y no llama a nadie. CI no lo prende. No hay un resultado en vivo para mostrar.
 
 Si te preguntan "¿y en producción?", la respuesta honesta está en [ADAPT_TO_A_REAL_CLIENT.md](ADAPT_TO_A_REAL_CLIENT.md): primero discovery, después sombra, después el gate. Este repo es el ensayo con datos ficticios.

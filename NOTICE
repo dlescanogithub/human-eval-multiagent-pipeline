@@ -1,5 +1,5 @@
 This repository is original work for a fictional domain (Nortia Learning).
 
-The eval-kit shape (cassette provider, fake provider, JSONL trace, JSON logs, secret scan, invariant checks) follows a pattern described for https://github.com/dlescanogithub/agent-runtime-evals . That private repository was not readable from the environment that created this code (HTTP 404), so no file was copied. See docs/PROVENANCE.md and docs/IP_AND_PROVENANCE.md.
+Cassette playback, invariant checks, the JSON trace, structured logging, and the secret scanner are small utilities shared across portfolio repositories and kept aligned. See docs/PROVENANCE.md. Nothing here is copied from employer or client work.
 
 Do not make this repository public until the checklist in docs/IP_AND_PROVENANCE.md is done.

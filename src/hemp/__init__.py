@@ -1,6 +1,6 @@
-"""Synthetic multi-agent content pipeline with human review.
+"""Multi-step generation-and-review pipeline. Roles are replayed from cassettes by default.
 
 100% synthetic. Fictional domain: Nortia Learning, Foundations of Fictional Logistics.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

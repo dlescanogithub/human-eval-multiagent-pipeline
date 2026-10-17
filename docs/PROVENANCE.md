@@ -2,23 +2,28 @@
 
 ## This repository
 
-Original code and an original fictional corpus. Written for the private portfolio repo `human-eval-multiagent-pipeline`. Domain: Nortia Learning, course "Foundations of Fictional Logistics". No employer materials and no client materials were used.
+Original code and an original fictional corpus for the private portfolio repository `human-eval-multiagent-pipeline`. The domain is Nortia Learning and the course "Foundations of Fictional Logistics". Nothing in this tree comes from an employer or a client.
 
-## The eval-kit pattern
+## Shared portfolio utilities
 
-The brief asked for a documented copy of the eval kit in `dlescanogithub/agent-runtime-evals`, branch `cursor/agent-runtime-evals-mvp-7e58`, commit `55cfd4183fb2489d77fc9c8552e008274dc78f77`, where that was useful (`src/agent_runtime/evalkit/`, cassette provider, fake provider, JSONL trace, JSON logging, secret scan).
+These small utilities are maintained in parallel across portfolio repositories and kept aligned. They are vendored copies, not a published library:
 
-On 2026-10-17 the cloud agent that built this repo could not read that private repository. `gh` and the checkout token both received HTTP 404 / "repository not found". No blob was downloaded. Nothing in `src/hemp/` is a line-for-line copy.
+- cassette provider
+- invariant checks
+- JSON trace
+- structured logging
+- secretscan
 
-What was implemented instead, under `src/hemp/`, as an original version of the same ideas:
+`src/hemp/secretscan.py` is the copy in this repository. It is meant to stay identical to the copies in the other portfolio repositories.
 
-| Idea | Where it lives here |
-| --- | --- |
-| Invariant evals, not golden tool-call traces | `src/hemp/evalkit/` |
-| Cassette provider | `src/hemp/providers/cassette.py` |
-| Fake provider for tests | `src/hemp/providers/fake.py` |
-| JSONL trace | `src/hemp/trace.py` |
-| JSON logging | `src/hemp/logging_setup.py` |
-| Secret scan | `src/hemp/secretscan.py` |
+src/hemp/secretscan.py sha256 854fb05c30f89011a18c6d85575fab5d37d259e51bf30a2c754105c608335aa8
 
-If that reference repo becomes readable later, diff it against this package and record the comparison here. Until then, do not describe this code as a fork or a copy.
+Check that line with `make secretscan-hash`. `python -m pytest` checks the same digest.
+
+## What was adapted here
+
+The lesson pipeline, the fictional corpus, the rubric, the review queue, the agreement computation demo, and the optional live provider are specific to this repository. The shared utilities above were fitted to the `hemp` package: import paths, cassette step names, and the invariant list.
+
+## Publication
+
+Do not make this repository public until the checklist in [IP_AND_PROVENANCE.md](IP_AND_PROVENANCE.md) is done.

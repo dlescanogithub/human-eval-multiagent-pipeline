@@ -22,14 +22,14 @@ flowchart TD
 | Piece | Module | Notes |
 | --- | --- | --- |
 | Course, corpus, rubric, cost card | `src/hemp/load.py` | JSON on disk. Corpus must be labeled `synthetic`. Cost card must be `estimate: true`. |
-| Writer / verifier / critic | `src/hemp/providers/cassette.py` | Keyed by `role:step`. A missing key is an error, not a retry. |
-| Retries | `src/hemp/providers/retry.py` | Only `TransientProviderError`. Max attempts and a backoff cap. The cassette path does not sleep. |
-| Optional network adapter | `src/hemp/providers/openai_compat.py` | Off unless constructed with `allow_network`. Not used by demo or eval. |
+| Writer / verifier / critic | `src/hemp/providers/cassette.py` | Roles replayed from a cassette, keyed by `role:step`. A missing key is an error, not a retry. |
+| Retries on the cassette path | `src/hemp/providers/retry.py` | Only `TransientProviderError`. Max attempts and a backoff cap. The cassette path does not sleep. |
+| Optional live provider | `src/hemp/providers/openai_compat.py` | OpenAI-compatible chat-completions HTTP API. Off unless `LIVE_MODE=1` and the live settings are set. Bounded retries, jitter, `Retry-After`. Writes a cassette under gitignored `var/`. Not used by demo or eval. |
 | Checker | `src/hemp/checker.py` | Citations, grounding, glossary terms, redundancy, repetition, prerequisite order, clarity length, denylist. |
 | Running summary | `src/hemp/models.py` `RunningSummary` | Updated only when a lesson is accepted. |
 | Queue and publish rule | `src/hemp/review/queue.py` | Means per dimension, safety on every label, enough labels. |
 | Synthetic labels | `src/hemp/review/synthetic_raters.py` | Seeded. Not a sample of people. |
-| Agreement | `src/hemp/review/agreement.py` | Cohen, Fleiss, nominal Krippendorff. |
+| Agreement | `src/hemp/review/agreement.py`, `src/hemp/review/agreement_demo.py` | Cohen, Fleiss, nominal Krippendorff. The reported figure is a 48-item synthetic computation demo with bootstrap intervals. CSV import does not certify human labels. |
 | Sampling | `src/hemp/review/sampling.py` | Confidence under 0.7 selects 3 raters, otherwise 2. |
 | Drift | `src/hemp/review/drift.py` | Compares later simulated weeks with the first two. |
 | Trace | `src/hemp/trace.py` | JSONL. Every row has `rubric_version`. |

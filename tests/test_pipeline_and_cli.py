@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from hemp.cli import main
-from hemp.config import find_root, load_settings
+from hemp.config import LiveConfig, find_root, load_settings
 from hemp.errors import ConfigError, SchemaError
 from hemp.evalkit.runner import EXIT_GATE_RED, EXIT_OK, default_cases, run_case
 from hemp.load import load_course, read_json
@@ -54,7 +54,9 @@ def test_cli_eval_demo_generate_and_review(repo_root: Path, tmp_path: Path, caps
     assert main(["--root", str(repo_root), "demo", "--artifact-dir", str(demo_dir)]) == 0
     demo_text = capsys.readouterr().out
     assert "100% synthetic" in demo_text
+    assert "COMPUTATION DEMO" in demo_text
     assert "not a human study" in demo_text
+    assert "n_items=48" in demo_text
     report = json.loads((demo_dir / "report.json").read_text(encoding="utf-8"))
     assert report["published"] == 4
     assert (demo_dir / "trace.jsonl").read_text(encoding="utf-8").count("rubric_version") > 0
@@ -145,8 +147,17 @@ def test_config_and_openai_guard(repo_root: Path, tmp_path: Path) -> None:
     settings = load_settings({}, root=repo_root)
     assert settings.provider == "cassette"
     assert settings.allow_network is False
+    live = LiveConfig(
+        base_url="https://example.invalid/v1",
+        model="fake-model",
+        api_key="local-test",
+        max_spend_usd=1.0,
+        prompt_usd_per_1k=0.0,
+        completion_usd_per_1k=0.0,
+        price_date="2026-10-17",
+    )
     with pytest.raises(ConfigError):
-        OpenAICompatProvider(api_key="x", base_url="https://example.invalid", model="m", allow_network=False)
+        OpenAICompatProvider(live, live_mode=False)
     with pytest.raises(ConfigError):
         build_provider(
             provider="openai",
@@ -187,12 +198,7 @@ def test_config_and_openai_guard(repo_root: Path, tmp_path: Path) -> None:
     assert parsed == {"lesson": "L1"}
     with pytest.raises(SchemaError):
         parse_chat_response({"choices": []})
-    body = OpenAICompatProvider(
-        api_key="local-test",
-        base_url="https://example.invalid/v1",
-        model="fake-model",
-        allow_network=True,
-    ).build_body(
+    body = OpenAICompatProvider(live, live_mode=True).build_body(
         __import__("hemp.providers.base", fromlist=["CompletionRequest"]).CompletionRequest("writer", "outline", {})
     )
     assert body["temperature"] == 0

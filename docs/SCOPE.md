@@ -14,10 +14,11 @@ No fees. No staffing plan. Phases are a way to talk about what is in the tree an
 
 - Course spec, synthetic corpus, happy cassette, two regression cassettes.
 - Running summary, revision loop, deterministic checker, invariant eval, forced red gate.
-- Queue on disk, CLI, local page, synthetic labels, agreement math, simulated drift, JSONL trace.
+- Queue on disk, CLI, local page, synthetic labels, agreement computation demo (48 synthetic items), CSV import template, simulated drift, JSONL trace.
+- Optional live provider, off by default, exit 2 without config. No live result is claimed.
 - CI: lint, types, tests with an 80% coverage floor, eval, regression-must-fail, secret scan.
 
-Exit criteria for phase 0, met on 2026-10-17 at commit `d8497e6`: `python -m pytest` (21 passed, 89.99% coverage), `python -m hemp eval` (`EVAL_PASS`), `python -m hemp eval-regression` (exit 1, `GATE_RED`).
+Exit criteria for phase 0, met on 2026-10-17 at commit `REPLACE_SHA`, package 0.1.1: `python -m pytest` (38 passed, 91.36% coverage), `python -m hemp eval` (`EVAL_PASS`), `python -m hemp eval-regression` (exit 1, `GATE_RED`).
 
 ## Phase 1 — shadow on a real outline (not started)
 
@@ -38,7 +39,7 @@ Exit: a week of traces where every approved piece has the required human labels 
 ## Out of scope
 
 - Vector search or a hosted retrieval service
-- Adapters for a managed agent platform
+- Adapters for a managed model platform
 - A multi-tenant review product
 - A calibration study with paid or volunteer raters
 - Sending email, posting to an LMS, or opening a pull request in a docs site

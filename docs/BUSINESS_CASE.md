@@ -16,7 +16,7 @@ The repeat cassette and the uncited cassette do not publish the bad lesson. Safe
 
 Rates live in `fixtures/cost/illustrative_rates.json` and are labeled simulated. They are not a quote and not a public price list.
 
-Measured inputs from `python -m hemp demo` on 2026-10-17, commit `d8497e6`, package 0.1.0:
+Measured inputs from `python -m hemp demo` on 2026-10-17, commit `REPLACE_SHA`, package 0.1.1:
 
 - 4100 tokens (2550 prompt + 1550 completion)
 - 9 synthetic reviews

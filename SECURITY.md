@@ -10,15 +10,15 @@ If you found a problem in a private copy, tell Diego Lescano directly. There is 
 
 - The default provider is a cassette. `python -m hemp eval`, `python -m hemp demo`, and CI do not open a network connection to a model vendor.
 - Configuration is environment variables only. `.env.example` has empty placeholders. The code does not load a `.env` file. Do not commit one.
-- `python -m hemp.secretscan` runs in CI. It looks for private-key headers and a few token shapes. It is a tripwire, not a full secret-management program.
-- The optional OpenAI-compatible adapter raises `ConfigError` unless `HEMP_ALLOW_NETWORK=1` and a key and model are set. Tests never take that branch.
+- `python -m hemp.secretscan` runs in CI. It looks for private-key headers and the token shapes listed in the scanner. `docs/PROVENANCE.md` records the file's sha256. It is a tripwire, not a full secret-management program.
+- The optional live provider raises `ConfigError` unless `LIVE_MODE=1` and the base URL, model, key, spend cap, prices, and price date are set. `python -m hemp live` turns that into exit 2 and does not open a socket. Tests never take the network branch. Demo and eval ignore `LIVE_MODE`.
 - The review page binds to `127.0.0.1` and has no authentication. Do not put it on a public interface. It writes the queue file you passed in. That is the whole effect.
 
 ## What you should not put here
 
 - API keys, PATs, or customer data
 - A real course, a real employee name, or a real company's materials
-- A claim that the synthetic kappas are a human study
+- A claim that the synthetic agreement demo is a human study, or a live-result number this repo did not measure
 
 ## Known limits
 

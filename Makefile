@@ -10,7 +10,7 @@
 
 PYTHON ?= python3
 
-.PHONY: setup lint format typecheck test eval eval-regression eval-regression-assert demo secrets ci
+.PHONY: setup lint format typecheck test eval eval-regression eval-regression-assert demo secrets secretscan-hash ci
 
 setup:
 	$(PYTHON) -m pip install -e ".[dev]"
@@ -52,4 +52,8 @@ demo:
 secrets:
 	$(PYTHON) -m hemp.secretscan
 
-ci: lint typecheck test eval secrets eval-regression-assert
+secretscan-hash:
+	@$(PYTHON) -c 'import hashlib, pathlib, sys; digest = hashlib.sha256(pathlib.Path("src/hemp/secretscan.py").read_bytes()).hexdigest(); text = pathlib.Path("docs/PROVENANCE.md").read_text(encoding="utf-8"); needle = "src/hemp/secretscan.py sha256 " + digest; \
+sys.exit(0 if needle in text else (print("secretscan hash mismatch", digest) or 1))'
+
+ci: lint typecheck test eval secrets secretscan-hash eval-regression-assert

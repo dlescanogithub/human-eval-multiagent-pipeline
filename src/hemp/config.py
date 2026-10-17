@@ -42,6 +42,19 @@ class Policy:
 
 
 @dataclass(frozen=True)
+class LiveConfig:
+    """Settings for one optional live run. Absent unless ``load_live_config`` succeeds."""
+
+    base_url: str
+    model: str
+    api_key: str
+    max_spend_usd: float
+    prompt_usd_per_1k: float
+    completion_usd_per_1k: float
+    price_date: str
+
+
+@dataclass(frozen=True)
 class Settings:
     provider: str
     allow_network: bool
@@ -86,4 +99,50 @@ def load_settings(
         openai_model=env.get("HEMP_MODEL", ""),
         cost_cap_simulated_usd=cap,
         root=root or find_root(),
+    )
+
+
+_LIVE_REQUIRED = (
+    "LLM_BASE_URL",
+    "LLM_MODEL",
+    "LLM_API_KEY",
+    "MAX_LIVE_SPEND_USD",
+    "LLM_PROMPT_USD_PER_1K",
+    "LLM_COMPLETION_USD_PER_1K",
+    "LLM_PRICE_DATE",
+)
+
+
+def load_live_config(environ: dict[str, str] | None = None) -> LiveConfig:
+    """Closed door: missing ``LIVE_MODE=1`` or any price field raises ``ConfigError``.
+
+    Demo and eval do not call this. A live command turns the error into exit 2.
+    """
+    env = os.environ if environ is None else environ
+    if env.get("LIVE_MODE", "0") != "1":
+        raise ConfigError("LIVE_MODE is not 1; the live provider is off")
+    missing = [name for name in _LIVE_REQUIRED if not env.get(name, "").strip()]
+    if missing:
+        raise ConfigError("live config missing: " + ",".join(missing))
+    try:
+        max_spend = float(env["MAX_LIVE_SPEND_USD"])
+        prompt_price = float(env["LLM_PROMPT_USD_PER_1K"])
+        completion_price = float(env["LLM_COMPLETION_USD_PER_1K"])
+    except ValueError as exc:
+        raise ConfigError(
+            "MAX_LIVE_SPEND_USD, LLM_PROMPT_USD_PER_1K, and LLM_COMPLETION_USD_PER_1K must be numbers"
+        ) from exc
+    if max_spend <= 0 or prompt_price < 0 or completion_price < 0:
+        raise ConfigError("MAX_LIVE_SPEND_USD must be positive and prices must be non-negative")
+    price_date = env["LLM_PRICE_DATE"].strip()
+    if len(price_date) != 10 or price_date[4] != "-" or price_date[7] != "-":
+        raise ConfigError("LLM_PRICE_DATE must be YYYY-MM-DD")
+    return LiveConfig(
+        base_url=env["LLM_BASE_URL"].strip(),
+        model=env["LLM_MODEL"].strip(),
+        api_key=env["LLM_API_KEY"].strip(),
+        max_spend_usd=max_spend,
+        prompt_usd_per_1k=prompt_price,
+        completion_usd_per_1k=completion_price,
+        price_date=price_date,
     )

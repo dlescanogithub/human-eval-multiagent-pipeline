@@ -3,10 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import time
+from collections.abc import Callable
 from pathlib import Path
 
 from hemp import __version__
-from hemp.config import Policy, find_root, load_settings
+from hemp.config import LiveConfig, Policy, find_root, load_live_config, load_settings
+from hemp.errors import ConfigError, HempError
 from hemp.evalkit.runner import default_cases, exit_code, format_report, run_case
 from hemp.load import (
     load_corpus,
@@ -19,8 +22,11 @@ from hemp.load import (
 from hemp.logging_setup import configure_logging, log_event
 from hemp.models import Corpus, CostCard, CourseSpec, PipelineResult, ReviewLabel, Rubric
 from hemp.pipeline import generate_course, run_course
+from hemp.providers.base import Provider
 from hemp.providers.cassette import CassetteProvider
+from hemp.providers.openai_compat import OpenAICompatProvider
 from hemp.providers.retry import RetryingProvider
+from hemp.review.agreement_demo import computation_demo, format_computation_demo, import_labels_csv
 from hemp.review.drift import drift_report
 from hemp.review.queue import add_label, dump_queue, load_queue, save_queue
 from hemp.review.server import serve
@@ -60,6 +66,13 @@ def main(argv: list[str] | None = None) -> int:
     drift = sub.add_parser("drift")
     drift.add_argument("--input", default="fixtures/drift/simulated_weeks.json")
     sub.add_parser("secretscan")
+    sub.add_parser("agreement-demo", help="seeded synthetic agreement computation demo (not a human study)")
+    imported = sub.add_parser("agreement-import", help="compute agreement from a CSV of labels")
+    imported.add_argument("--csv", required=True)
+    sub.add_parser(
+        "live",
+        help="optional live provider; exits 2 unless LIVE_MODE=1 and every live setting is set",
+    )
 
     args = parser.parse_args(argv)
     root = Path(args.root).resolve() if args.root else find_root()
@@ -77,6 +90,13 @@ def main(argv: list[str] | None = None) -> int:
         return _drift(root, Path(args.input))
     if args.command == "secretscan":
         return secretscan_main([str(root)])
+    if args.command == "agreement-demo":
+        print(format_computation_demo(computation_demo()))
+        return 0
+    if args.command == "agreement-import":
+        return _agreement_import(root, Path(args.csv))
+    if args.command == "live":
+        return _live(root)
     if args.command == "review":
         return _review(args)
     return 2
@@ -142,7 +162,9 @@ def _demo(root: Path, artifact_dir: Path, *, synthetic: bool) -> int:
     queue_payload = dump_queue(result.items, rubric_version=rubric.version, mins=rubric.mins())
     save_queue(artifact_dir / "queue.json", queue_payload)
     report = _public_report(result, drift)
+    report["agreement_demo"] = computation_demo()
     write_json(artifact_dir / "report.json", report)
+    write_json(artifact_dir / "agreement_demo.json", report["agreement_demo"])
     if result.agreement is not None:
         write_json(artifact_dir / "agreement.json", result.agreement)
     if result.cost is not None:
@@ -213,17 +235,107 @@ def _format_demo(report: dict[str, object]) -> str:
             f"total_usd={cost.get('total_usd')} per_approved={cost.get('per_approved_piece_usd')} "
             f"all_human_baseline={cost.get('all_human_baseline_usd')} [EST rates]"
         )
-    agreement = report.get("agreement")
-    if isinstance(agreement, dict) and agreement.get("status") == "computed":
-        lines.append(
-            "synthetic agreement "
-            f"cohen_overall={agreement.get('cohens_kappa_rater1_rater2')} "
-            f"cohen_clarity={agreement.get('cohens_kappa_clarity')} "
-            f"judge_vs_majority={agreement.get('judge_vs_majority_kappa')} "
-            "(not a human study)"
-        )
+    lines.append("Course-queue labels are a 4-item synthetic fixture, not an agreement result.")
+    demo = report.get("agreement_demo")
+    if isinstance(demo, dict):
+        lines.append(format_computation_demo(demo))
     lines.append(f"simulated drift alert weeks: {report.get('drift_alert_weeks')}")
     return "\n".join(lines)
+
+
+def _agreement_import(root: Path, csv_path: Path) -> int:
+    source = csv_path if csv_path.is_absolute() else root / csv_path
+    if not source.is_file():
+        print(
+            json.dumps(
+                {"event": "agreement_import_failed", "exit_code": 2, "reason": "file not found"},
+                sort_keys=True,
+            )
+        )
+        return 2
+    try:
+        report = import_labels_csv(source)
+    except ValueError as exc:
+        print(
+            json.dumps(
+                {"event": "agreement_import_failed", "exit_code": 2, "reason": str(exc)},
+                sort_keys=True,
+            )
+        )
+        return 2
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
+
+
+def default_live_provider(root: Path, config: LiveConfig) -> OpenAICompatProvider:
+    path = root / "var" / "live" / "cassette.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return OpenAICompatProvider(
+        config,
+        live_mode=True,
+        cassette_path=path,
+        sleep=lambda seconds: time.sleep(seconds),
+    )
+
+
+def _live(
+    root: Path,
+    provider_factory: Callable[[Path, LiveConfig], Provider] | None = None,
+) -> int:
+    try:
+        config = load_live_config()
+    except ConfigError as exc:
+        return _refuse_live(str(exc))
+    factory = provider_factory or default_live_provider
+    try:
+        provider = factory(root, config)
+        return _run_live_pipeline(root, provider)
+    except HempError as exc:
+        log_event(logging.getLogger(LOGGER_NAME), "live_failed", error=exc.__class__.__name__)
+        print(json.dumps({"error": str(exc), "event": "live_failed", "exit_code": 2}, sort_keys=True))
+        return 2
+
+
+def _refuse_live(reason: str) -> int:
+    log_event(logging.getLogger(LOGGER_NAME), "live_refused", reason=reason)
+    print(json.dumps({"event": "live_refused", "exit_code": 2, "reason": reason}, sort_keys=True))
+    return 2
+
+
+def _run_live_pipeline(root: Path, provider: Provider) -> int:
+    """Same lesson pipeline as generate. Nothing is approved. No live figure is claimed."""
+    course, corpus, rubric, _card, _cassette = _load_happy(root)
+    policy = _policy(root)
+    out_dir = root / "var" / "live"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    result = generate_course(
+        course=course,
+        corpus=corpus,
+        rubric=rubric,
+        provider=provider,
+        policy=policy,
+        trace_path=out_dir / "trace.jsonl",
+    )
+    queue_payload = dump_queue(result.items, rubric_version=rubric.version, mins=rubric.mins())
+    save_queue(out_dir / "queue.json", queue_payload)
+    summary = {
+        "event": "live_pipeline_finished",
+        "live_result_claimed": False,
+        "note": (
+            "No live result is published. Items stay pending for human review. Any cassette under var/ is gitignored."
+        ),
+        "pending": sum(1 for item in result.items if item.status == "pending"),
+        "provider": result.provider_name,
+        "published": sum(1 for item in result.items if item.status == "approved"),
+    }
+    print(json.dumps(summary, sort_keys=True))
+    log_event(
+        logging.getLogger(LOGGER_NAME),
+        "live_pipeline_finished",
+        pending=summary["pending"],
+        provider=result.provider_name,
+    )
+    return 0
 
 
 def _eval(root: Path, *, expect_red: bool) -> int:

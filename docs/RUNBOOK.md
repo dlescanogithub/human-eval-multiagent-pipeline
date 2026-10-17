@@ -30,7 +30,7 @@ Logs are JSON lines on stderr. A happy demo logs `course_generated` and `synthet
 | `eval-regression` exits 0 | The gate failed to go red. CI treats that as a broken gate. Restore the block on repetition or missing citations. |
 | `eval-regression` exits 2 (`GATE_BROKEN`) | A safety invariant failed or the expected finding code was absent. A bad lesson may have been marked approved, or the cassette no longer exercises the case. |
 | Secret scan fails | Remove the secret from the tree and from history if it was pushed. Rotate the credential. Do not "allowlist" a real key. |
-| Someone set `HEMP_ALLOW_NETWORK=1` in CI | Revert the workflow. CI must stay cassette-only. |
+| Someone set `LIVE_MODE=1` in CI | Revert the workflow. CI must stay cassette-only. `hemp live` is not a CI step. |
 
 ## Rollback
 
@@ -42,4 +42,5 @@ If a local queue file was edited by mistake, delete `artifacts/` and run `genera
 
 - Content questions (rubric, corpus, what "done" means): the person acting as content owner. In this portfolio that decision sits with Diego; the fictional role is the Nortia content owner.
 - Gate, CI, cassettes, adapter flag: whoever is merging to this repo. CODEOWNERS is `@dlescanogithub`.
-- Do not hand a kappa screenshot to a stakeholder without the sentence "synthetic labels, not a study."
+- Do not hand an agreement screenshot to a stakeholder without the sentence "synthetic raters, computation demo, not a human study."
+- Do not paste a live-results number into the README. That table stays empty until a run is measured and labeled.

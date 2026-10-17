@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hemp"
-version = "0.1.0"
-description = "Synthetic multi-agent content pipeline with human-in-the-loop evaluation."
+version = "0.1.1"
+description = "Multi-step generation-and-review pipeline with a human review gate. Cassette roles by default."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }

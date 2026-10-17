@@ -93,9 +93,9 @@ def overall_label(scores: dict[str, int], mins: dict[str, int]) -> str:
 def agreement_report(items: tuple[QueueItem, ...], mins: dict[str, int]) -> dict[str, object]:
     """Agreement on synthetic labels. The disclaimer is part of the result on purpose."""
     disclaimer = (
-        "Synthetic rater labels from a seeded function. "
-        "Overall pass/fail on this fixture stays inside the publish band. "
-        "Not a human calibration study."
+        "Synthetic rater labels from a seeded function on the 4-lesson course fixture. "
+        "This n is too small to interpret. Not a human calibration study. "
+        "The computation demo lives in agreement_demo.py."
     )
     if not items:
         return {"label": "synthetic", "status": "not_applicable", "disclaimer": disclaimer}

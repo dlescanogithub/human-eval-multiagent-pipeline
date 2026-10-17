@@ -1,4 +1,4 @@
-"""Model providers. The default is a cassette. The network adapter is off."""
+"""Providers. The default is a cassette. The live chat-completions provider is off."""
 
 from hemp.providers.base import Completion, CompletionRequest
 from hemp.providers.cassette import CassetteProvider
