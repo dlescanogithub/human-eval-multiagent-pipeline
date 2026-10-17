@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Docs record two independent live runs from 2026-10-17, xAI `grok-4.20-0309-non-reasoning`, `LIVE_LLM=1`, `MAX_LIVE_SPEND_USD=0.15`. `python -m hemp live --pieces 1`: exit 0, 7 calls, checker accepted 1/1, pending, published 0, `live_result_claimed=false`, real 0.00785 USD, repo estimate 0.00879 USD. `python -m hemp live --pieces 3`: exit 0, 25 calls, checker accepted 1/3, 0 parse or format retries, real 0.03416 USD, repo estimate 0.03994 USD. live ejecutado en n=1 y n=3, muestra chica, sin tasa. judge-vs-human agreement: not measured yet. No code change.
+
 ## 0.1.3 — 2026-10-17
 
 - Each live step (outline, writer, verifier, critic) names itself, its input, and the exact JSON object to return, with a minimal example, and asks for only that JSON.

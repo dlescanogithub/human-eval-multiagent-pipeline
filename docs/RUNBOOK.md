@@ -47,5 +47,5 @@ If a local queue file was edited by mistake, delete `artifacts/` and run `genera
 - Content questions (rubric, corpus, what "done" means): the person acting as content owner. In this portfolio that decision sits with Diego; the fictional role is the Nortia content owner.
 - Gate, CI, cassettes, adapter flag: whoever is merging to this repo. CODEOWNERS is `@dlescanogithub`.
 - Do not hand an agreement screenshot to a stakeholder without the sentence "synthetic raters, computation demo, not a human study."
-- Do not paste a live-results number into the README. That table stays empty until a run is measured and labeled. Cost per approved piece in live mode is not measured yet.
+- The README live table holds the two reviewed runs from 2026-10-17. Add another row only from a local report you reviewed. Do not turn n=1 and n=3 into a rate. Cost per approved piece is not quoted.
 - judge-vs-human agreement: not measured yet. Do not fill `labels/human_labels.csv` with invented verdicts and then quote the kappa.

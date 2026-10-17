@@ -1,6 +1,6 @@
 # human-eval-multiagent-pipeline
 
-Default mode = deterministic fakes (tests orchestration, checker, gates). The live path is implementado, verificación live con un modelo real: pendiente. Real-model results: none yet.
+Default mode = deterministic fakes (tests orchestration, checker, gates). Live: ejecutado en n=1 y n=3, muestra chica, sin tasa. judge-vs-human agreement: not measured yet.
 
 **100% synthetic; fictional domain.** A multi-step generation-and-review pipeline for one fictional course. Writer, verifier, and critic are roles replayed from cassettes by default. The repository name says "multiagent"; renaming it is the owner's decision. On the default path those roles are sequential cassette steps.
 
@@ -18,7 +18,7 @@ Measured on 2026-10-17, package 0.1.3, commit `ccafba8048f54f825c77af89744895f0c
 
 This proves that, on the fictional Nortia course, the checker blocks a cassette that repeats an earlier lesson or emits an uncited claim, and that a fake which obeys an instruction embedded in a source document still does not publish. The happy cassette reaches `approved` only after the required synthetic reviews. `python -m hemp agreement-demo` proves that Cohen's kappa, Fleiss' kappa, and nominal Krippendorff's alpha, with a bootstrap interval over items, run on a seeded panel of 48 synthetic items and three documented reliabilities.
 
-It does not prove that people agree. judge-vs-human agreement: not measured yet. It does not prove that a live model would pass the gate. Real-model results: none yet. It does not prove that the simulated dollars were saved by a team. It does not prove that several model agents collaborated on the default path: those roles are cassette steps until `LIVE_LLM=1` is set outside CI. No live result is claimed.
+It does not prove that people agree. judge-vs-human agreement: not measured yet. Two live runs on 2026-10-17 do not prove a pass rate: live ejecutado en n=1 y n=3, muestra chica, sin tasa. It does not prove that the simulated dollars were saved by a team. It does not prove that several model agents collaborated on the default path: those roles are cassette steps until `LIVE_LLM=1` is set outside CI.
 
 ## Demo
 
@@ -67,7 +67,7 @@ flowchart TD
   decision --> trace[Trace JSONL]
 ```
 
-The checker, not the critic step, decides whether a draft is clean. The critic step can ask for another pass. Publication still needs the rubric's review count. Low critic confidence raises that count from 2 to 3. A live provider exists in code and can replace the cassette outside CI; demo and eval never select it. That path is implementado, verificación live con un modelo real: pendiente.
+The checker, not the critic step, decides whether a draft is clean. The critic step can ask for another pass. Publication still needs the rubric's review count. Low critic confidence raises that count from 2 to 3. A live provider exists in code and can replace the cassette outside CI; demo and eval never select it. Two reviewed runs are in the live-results table: live ejecutado en n=1 y n=3, muestra chica, sin tasa.
 
 ## Results
 
@@ -110,11 +110,14 @@ judge-vs-human agreement: not measured yet.
 
 ### Live results
 
-No live run is claimed. The live path is implementado, verificación live con un modelo real: pendiente. Real-model results: none yet. The provider is off unless `LIVE_LLM=1`, and CI does not set that flag. Paste a measured row into [docs/LIVE_RUN_TEMPLATE.md](docs/LIVE_RUN_TEMPLATE.md) only after a run you reviewed. `python -m hemp live-summary --dir var/live-evals/<stamp>` renders one page from a local report. That directory is gitignored.
+live ejecutado en n=1 y n=3, muestra chica, sin tasa. These two rows are independent runs on 2026-10-17, outside CI, with `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD=0.15`. The model for writer, verifier, and critic was xAI `grok-4.20-0309-non-reasoning`. The provider stays off unless that flag is set, and CI does not set it. Checker acceptance is the result of that run, not a rate. On `--pieces 1` the item stayed pending, nothing was published, and `live_result_claimed` stayed false. `hemp live` does not approve items. judge-vs-human agreement: not measured yet. A later row belongs in [docs/LIVE_RUN_TEMPLATE.md](docs/LIVE_RUN_TEMPLATE.md) only after you review the local report. `python -m hemp live-summary --dir var/live-evals/<stamp>` renders one page from that gitignored directory.
 
-| date | model_writer | model_verifier | model_critic | command | n_pieces | cost | invariant_pass_rates | notes |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-|  |  |  |  |  |  |  |  |  |
+| date | model | command | n | result | real cost (USD) | repo estimate (USD) |
+| --- | --- | --- | --- | --- | --- | --- |
+| 2026-10-17 | xAI grok-4.20-0309-non-reasoning | `python -m hemp live --pieces 1` | 1 | exit 0. 7 calls: outline, draft L1, verifier, critic, revise, verifier, critic. Checker accepted 1/1. The item stayed pending. Published 0. `live_result_claimed=false` | 0.00785 | 0.00879 |
+| 2026-10-17 | xAI grok-4.20-0309-non-reasoning | `python -m hemp live --pieces 3` | 3 | exit 0. 25 calls. Checker accepted 1/3. L2 rejected for `weak_grounding` and `repetition`. L3 rejected for `prerequisite_not_accepted` and `repetition`. 0 parse errors and 0 format retries | 0.03416 | 0.03994 |
+
+The repo estimate prices every prompt token at the input rate, including cached prompt tokens, so it is higher than the real charge on both runs. n=1 and n=3 do not support a pass rate or a cost per approved piece.
 
 Simulated cost for the happy cassette, using the [EST] rate card in `fixtures/cost/illustrative_rates.json`:
 
@@ -157,7 +160,7 @@ Design-only versus implemented:
 | --- | --- |
 | Outline, then lesson drafts that see a running summary | Implemented |
 | Writer, verifier, and critic steps, bounded revision loop, stop when the checker is clean and the critic step is not asking for another pass | Implemented. Default playback is a cassette |
-| Cassette and in-memory providers; optional live chat-completions provider behind env, off by default, not used in CI | Implemented. No live result is claimed |
+| Cassette and in-memory providers; optional live chat-completions provider behind env, off by default, not used in CI | Implemented. Two live runs are recorded (n=1 and n=3, muestra chica, sin tasa) |
 | Rubric as code: citations, grounding, redundancy, repetition, prerequisites, objective coverage, safety phrases | Implemented |
 | Review queue as files, CLI, and a local page on 127.0.0.1 | Implemented |
 | Cohen, Fleiss, Krippendorff, and bootstrap intervals | Implemented as a computation demo on 48 synthetic items. CSV import is implemented. A human study is not. judge-vs-human agreement: not measured yet |
@@ -177,7 +180,7 @@ Design-only versus implemented:
 | What may be published, and the rubric version | `rubrics/rubric-v1.json`, `src/hemp/review/queue.py` (`decide`) |
 | Human approval, including the synthetic stand-in | `src/hemp/cli.py` (`review decide`), `src/hemp/review/server.py`, `src/hemp/review/synthetic_raters.py` |
 | Nothing external is called on the default path | `src/hemp/providers/cassette.py`, `src/hemp/evalkit/invariants.py` (`no_unapproved_external_action`) |
-| Live provider in code, closed unless configured | `src/hemp/providers/llm_openai_compatible.py`, `src/hemp/providers/step_schema.py`, `src/hemp/config.py` (`load_live_config`). Each step prompt names the step and the JSON schema. Exit 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD`. Exit 3 (`BUDGET_EXHAUSTED`) when the cap is hit. Prices only from the environment. implementado, verificación live con un modelo real: pendiente |
+| Live provider in code, closed unless configured | `src/hemp/providers/llm_openai_compatible.py`, `src/hemp/providers/step_schema.py`, `src/hemp/config.py` (`load_live_config`). Each step prompt names the step and the JSON schema. Exit 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD`. Exit 3 (`BUDGET_EXHAUSTED`) when the cap is hit. Prices only from the environment. Two recorded runs: live ejecutado en n=1 y n=3, muestra chica, sin tasa |
 | Traceability | `src/hemp/trace.py`, demo artifact `trace.jsonl` |
 | Agreement computation demo, CSV import, and the empty judge-vs-human sheet | `src/hemp/review/agreement_demo.py`, `fixtures/agreement/human_labels_template.csv`, `labels/human_labels.template.csv`. judge-vs-human agreement: not measured yet |
 | Risks | [docs/RISKS.md](docs/RISKS.md) |
@@ -193,7 +196,7 @@ Not covered yet:
 - Retention and deletion of real learner data (there is none here)
 - Legal review of published claims against a real statute
 - A signed audit export for a customer
-- A live-model run, or a prompt-injection test against a real model. The poisoned-document regression uses a local fake
+- A prompt-injection test against a real model. The poisoned-document regression uses a local fake. The live table is two runs, not that test
 - A filled human-label file, or any real agreement figure. judge-vs-human agreement: not measured yet
 - Making this repository public
 
@@ -246,7 +249,7 @@ python -m hemp review agreement --file labels/human_labels.template.csv
 python -m hemp live --pieces 1   # exit 2 unless LIVE_LLM=1 and MAX_LIVE_SPEND_USD is set
 ```
 
-`python -m hemp live` with no live settings exits 2. `make live` is the same command with `--pieces 1`. It is not part of `make ci`. Do not point it at a paid API from CI. Cost per approved piece in live mode: not measured yet. See [docs/COST.md](docs/COST.md).
+`python -m hemp live` with no live settings exits 2. `make live` is the same command with `--pieces 1`. It is not part of `make ci`. Do not point it at a paid API from CI. The two recorded live totals are in the table above. Cost per approved piece is not quoted: live ejecutado en n=1 y n=3, muestra chica, sin tasa. See [docs/COST.md](docs/COST.md).
 
 If `make` is installed, the same steps are `make lint`, `make typecheck`, `make test`, `make eval`, `make eval-regression`, `make demo`, `make secrets`, and `make secretscan-hash`. `make ci` runs lint, types, tests, the happy gate, the secret scan, the hash check, and the assertion that the regression exits 1.
 
