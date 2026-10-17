@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hemp"
+version = "0.1.0"
+description = "Synthetic multi-agent content pipeline with human-in-the-loop evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Diego Lescano" }]
+keywords = ["evals", "human-in-the-loop", "synthetic", "content-pipeline"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "License :: OSI Approved :: MIT License",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=1.11",
+  "pre-commit>=3.7",
+  "pytest>=8.2",
+  "pytest-cov>=5",
+  "ruff>=0.11",
+]
+
+[project.scripts]
+hemp = "hemp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+hemp = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --cov=hemp --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+branch = false
+source = ["hemp"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["hemp"]
+mypy_path = "src"
+warn_unused_ignores = true
+disallow_any_generics = true
+no_implicit_reexport = true
