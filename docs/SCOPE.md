@@ -18,7 +18,7 @@ No fees. No staffing plan. Phases are a way to talk about what is in the tree an
 - Optional live provider, off by default, exit 2 without `LIVE_LLM=1` and the spend cap, exit 3 when the cap is exhausted. No live result is claimed. Cost per approved piece: not measured yet.
 - CI: lint, types, tests with an 80% coverage floor, eval, regression-must-fail, secret scan.
 
-Exit criteria for phase 0, met on 2026-10-17 at commit `COMMIT_SHA_HERE`, package 0.1.2: `python -m pytest` (59 passed, 89.07% coverage), `python -m hemp eval` (`EVAL_PASS`, 17/17), `python -m hemp eval-regression` (exit 1, `GATE_RED`).
+Exit criteria for phase 0, met on 2026-10-17 at commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, package 0.1.2: `python -m pytest` (59 passed, 89.07% coverage), `python -m hemp eval` (`EVAL_PASS`, 17/17), `python -m hemp eval-regression` (exit 1, `GATE_RED`).
 
 ## Phase 1 — shadow on a real outline (not started)
 

@@ -2,7 +2,7 @@
 
 Success, for this repo, means the gate can go green on a clean course and red on a bad one, with a trace a person can read. It does not mean a business outcome was observed.
 
-## Measured (2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`)
+## Measured (2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`)
 
 | Metric | Value | Command |
 | --- | --- | --- |

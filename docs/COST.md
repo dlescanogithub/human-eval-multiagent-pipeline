@@ -6,7 +6,7 @@ Price date / source: the card is `fixtures/cost/illustrative_rates.json`, marked
 
 | Scenario | Model / provider | Tokens or units | Cost / run | p50 / p95 latency | Quality | Price date / source |
 | --- | --- | --- | --- | --- | --- | --- |
-| Happy course, demo and eval | `fake-cassette-v1` (cassette) | 2550 prompt + 1550 completion tokens; 9 synthetic reviews; 72 human-minutes [EST] | 48.041 simulated USD (AI 0.041 + human 48). Cap 80. Per approved lesson 12.01025. All-human baseline 320 simulated USD | p50 2.414 ms / p95 2.454 ms, local, 21 runs, commit `COMMIT_SHA_HERE`, 2026-10-17. Not a vendor latency | 4/4 lessons approved; 17/17 invariants pass | [EST] card above. Tokens and review counts measured by `python -m hemp demo` |
+| Happy course, demo and eval | `fake-cassette-v1` (cassette) | 2550 prompt + 1550 completion tokens; 9 synthetic reviews; 72 human-minutes [EST] | 48.041 simulated USD (AI 0.041 + human 48). Cap 80. Per approved lesson 12.01025. All-human baseline 320 simulated USD | p50 2.414 ms / p95 2.454 ms, local, 21 runs, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, 2026-10-17. Not a vendor latency | 4/4 lessons approved; 17/17 invariants pass | [EST] card above. Tokens and review counts measured by `python -m hemp demo` |
 | Repeat regression | same cassette style | AI only on the calls in that cassette; 2 reviews on the clean lesson | 10.692467 simulated USD, under cap | not separately timed | quality gate red; bad lesson not published | same [EST] card; figure from `python -m hemp eval-regression` on 2026-10-17 |
 | Uncited regression | same | tokens only, no reviews (nothing queued) | 0.0182 simulated USD | not separately timed | quality gate red; nothing published | same |
 | Optional live provider | not run. `python -m hemp live --pieces 1` exits 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD` | not run | not measured yet | not run | not run | Off by default. Not used in CI. No vendor price is stored in the repo |
@@ -20,7 +20,7 @@ Rate card, all [EST]:
 | Reviewer rate | 40 simulated USD per hour |
 | All-human lesson | 120 minutes |
 
-Latency method: `run_case` on the happy `EvalCase`, 21 times, `time.perf_counter`, sorted, index `round(p * (n - 1))`. Warm process in this checkout, cassette already on disk. It does not include process startup of a cold `python -m hemp demo`. Measured 2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`: p50 2.414 ms, p95 2.454 ms.
+Latency method: `run_case` on the happy `EvalCase`, 21 times, `time.perf_counter`, sorted, index `round(p * (n - 1))`. Warm process in this checkout, cassette already on disk. It does not include process startup of a cold `python -m hemp demo`. Measured 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`: p50 2.414 ms, p95 2.454 ms.
 
 ## Live mode
 
