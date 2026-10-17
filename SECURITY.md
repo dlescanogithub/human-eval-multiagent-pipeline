@@ -1,0 +1,25 @@
+# Security
+
+This repository is a private portfolio exercise. It ships no secrets and it does not want any.
+
+## Reporting
+
+If you found a problem in a private copy, tell Diego Lescano directly. There is no public bounty and no public disclosure process, because the repository is not public.
+
+## What is in bounds
+
+- The default provider is a cassette. `python -m hemp eval`, `python -m hemp demo`, and CI do not open a network connection to a model vendor.
+- Configuration is environment variables only. `.env.example` has empty placeholders. The code does not load a `.env` file. Do not commit one.
+- `python -m hemp.secretscan` runs in CI. It looks for private-key headers and a few token shapes. It is a tripwire, not a full secret-management program.
+- The optional OpenAI-compatible adapter raises `ConfigError` unless `HEMP_ALLOW_NETWORK=1` and a key and model are set. Tests never take that branch.
+- The review page binds to `127.0.0.1` and has no authentication. Do not put it on a public interface. It writes the queue file you passed in. That is the whole effect.
+
+## What you should not put here
+
+- API keys, PATs, or customer data
+- A real course, a real employee name, or a real company's materials
+- A claim that the synthetic kappas are a human study
+
+## Known limits
+
+The checker looks for a small denylist ("publish without review", "ignore the reviewer", "skip the citation", "bypass approval") and for citations against the fictional corpus. It is not a safety classifier for arbitrary text. See [docs/RISKS.md](docs/RISKS.md) and the "What this does NOT do" list in the README.
