@@ -1,0 +1,243 @@
+{
+  "name": "regression_repeat",
+  "provider": "cassette",
+  "model": "fake-cassette-v1",
+  "notes": "Writer keeps repeating lesson 1. The gate must reject it.",
+  "steps": {
+    "writer:outline": {
+      "usage": {
+        "prompt_tokens": 200,
+        "completion_tokens": 100
+      },
+      "content": {
+        "course_id": "NL-LOG-101R",
+        "title": "Foundations of Fictional Logistics (repeat slice)",
+        "lessons": [
+          {
+            "id": "L1",
+            "title": "Waybills and handoff tokens",
+            "objective_ids": [
+              "OBJ-WAYBILL"
+            ],
+            "prerequisite_ids": []
+          },
+          {
+            "id": "L2",
+            "title": "The hub rule",
+            "objective_ids": [
+              "OBJ-HUB"
+            ],
+            "prerequisite_ids": [
+              "L1"
+            ]
+          }
+        ]
+      }
+    },
+    "writer:draft:L1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L1",
+        "title": "Waybills and handoff tokens",
+        "objective_ids": [
+          "OBJ-WAYBILL"
+        ],
+        "prerequisite_ids": [],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token. Learners record the token before a shipment leaves the dock.",
+        "claims": [
+          {
+            "id": "L1-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L1:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L1-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L1:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 5,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.92,
+        "request_revision": false,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:draft:L2": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L2",
+        "title": "The hub rule",
+        "objective_ids": [
+          "OBJ-HUB"
+        ],
+        "prerequisite_ids": [
+          "L1"
+        ],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token. Learners record the token before a shipment leaves the dock.",
+        "claims": [
+          {
+            "id": "L2-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L2:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L2-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L2:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 2,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.3,
+        "request_revision": true,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:revise:L2:r1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L2",
+        "title": "The hub rule",
+        "objective_ids": [
+          "OBJ-HUB"
+        ],
+        "prerequisite_ids": [
+          "L1"
+        ],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token. Learners record the token before a shipment leaves the dock.",
+        "claims": [
+          {
+            "id": "L2-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L2:r1": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L2-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L2:r1": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 2,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.3,
+        "request_revision": true,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,154 @@
+{
+  "name": "regression_uncited",
+  "provider": "cassette",
+  "model": "fake-cassette-v1",
+  "notes": "Writer never adds a citation. The gate must reject it.",
+  "steps": {
+    "writer:outline": {
+      "usage": {
+        "prompt_tokens": 200,
+        "completion_tokens": 100
+      },
+      "content": {
+        "course_id": "NL-LOG-101U",
+        "title": "Foundations of Fictional Logistics (uncited slice)",
+        "lessons": [
+          {
+            "id": "L1",
+            "title": "Waybills and handoff tokens",
+            "objective_ids": [
+              "OBJ-WAYBILL"
+            ],
+            "prerequisite_ids": []
+          }
+        ]
+      }
+    },
+    "writer:draft:L1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L1",
+        "title": "Waybills and handoff tokens",
+        "objective_ids": [
+          "OBJ-WAYBILL"
+        ],
+        "prerequisite_ids": [],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+        "claims": [
+          {
+            "id": "L1-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": []
+          }
+        ]
+      }
+    },
+    "verifier:L1:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L1-C1",
+            "supported": false,
+            "corpus_ids": []
+          }
+        ]
+      }
+    },
+    "critic:L1:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 1,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.2,
+        "request_revision": true,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:revise:L1:r1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L1",
+        "title": "Waybills and handoff tokens",
+        "objective_ids": [
+          "OBJ-WAYBILL"
+        ],
+        "prerequisite_ids": [],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+        "claims": [
+          {
+            "id": "L1-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": []
+          }
+        ]
+      }
+    },
+    "verifier:L1:r1": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L1-C1",
+            "supported": false,
+            "corpus_ids": []
+          }
+        ]
+      }
+    },
+    "critic:L1:r1": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 1,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.2,
+        "request_revision": true,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    }
+  }
+}

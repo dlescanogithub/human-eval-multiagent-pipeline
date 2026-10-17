@@ -1,0 +1,5 @@
+piece_id,claim,source_excerpt,human_verdict,judge_verdict,fixture_label
+NL-LOG-TEST:piece-01,A waybill lists the origin dock.,A waybill lists the origin dock.,pass,pass,synthetic-test-only
+NL-LOG-TEST:piece-02,A hub is optional.,A hub is optional.,fail,pass,synthetic-test-only
+NL-LOG-TEST:piece-03,Dwell time is hours at a dock.,Dwell time is hours at a dock.,pass,pass,synthetic-test-only
+NL-LOG-TEST:piece-04,Frost is a cold-chain band.,Frost is a cold-chain band.,fail,fail,synthetic-test-only

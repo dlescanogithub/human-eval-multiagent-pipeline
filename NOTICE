@@ -1,0 +1,5 @@
+This repository is original work for a fictional domain (Nortia Learning).
+
+Cassette playback, invariant checks, the JSON trace, structured logging, and the secret scanner are small utilities shared across portfolio repositories and kept aligned. See docs/PROVENANCE.md. Nothing here is copied from employer or client work.
+
+Do not make this repository public until the checklist in docs/IP_AND_PROVENANCE.md is done.

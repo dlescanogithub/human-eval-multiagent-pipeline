@@ -1,0 +1,405 @@
+{
+  "name": "happy",
+  "provider": "cassette",
+  "model": "fake-cassette-v1",
+  "notes": "Authored synthetic responses. Not a recording of a vendor call.",
+  "steps": {
+    "writer:outline": {
+      "usage": {
+        "prompt_tokens": 200,
+        "completion_tokens": 100
+      },
+      "content": {
+        "course_id": "NL-LOG-101",
+        "title": "Foundations of Fictional Logistics",
+        "lessons": [
+          {
+            "id": "L1",
+            "title": "Waybills and handoff tokens",
+            "objective_ids": [
+              "OBJ-WAYBILL"
+            ],
+            "prerequisite_ids": []
+          },
+          {
+            "id": "L2",
+            "title": "The hub rule",
+            "objective_ids": [
+              "OBJ-HUB"
+            ],
+            "prerequisite_ids": [
+              "L1"
+            ]
+          },
+          {
+            "id": "L3",
+            "title": "Dwell time and cold-chain bands",
+            "objective_ids": [
+              "OBJ-DWELL",
+              "OBJ-COLD"
+            ],
+            "prerequisite_ids": [
+              "L2"
+            ]
+          },
+          {
+            "id": "L4",
+            "title": "Exception codes",
+            "objective_ids": [
+              "OBJ-EXCEPTION"
+            ],
+            "prerequisite_ids": [
+              "L3"
+            ]
+          }
+        ]
+      }
+    },
+    "writer:draft:L1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L1",
+        "title": "Waybills and handoff tokens",
+        "objective_ids": [
+          "OBJ-WAYBILL"
+        ],
+        "prerequisite_ids": [],
+        "topics": [
+          "waybill",
+          "handoff token"
+        ],
+        "body": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token. Learners record the token before a shipment leaves the dock.",
+        "claims": [
+          {
+            "id": "L1-C1",
+            "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+            "citation_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L1:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L1-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-WAYBILL"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L1:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 5,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.92,
+        "request_revision": false,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:draft:L2": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L2",
+        "title": "The hub rule",
+        "objective_ids": [
+          "OBJ-HUB"
+        ],
+        "prerequisite_ids": [
+          "L1"
+        ],
+        "topics": [
+          "hub rule",
+          "regional hub"
+        ],
+        "body": "Under the Nortia hub rule, every inter-region move passes through exactly one regional hub before the destination dock.",
+        "claims": [
+          {
+            "id": "L2-C1",
+            "text": "Under the Nortia hub rule, every inter-region move passes through exactly one regional hub before the destination dock.",
+            "citation_ids": []
+          }
+        ]
+      }
+    },
+    "verifier:L2:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L2-C1",
+            "supported": false,
+            "corpus_ids": []
+          }
+        ]
+      }
+    },
+    "critic:L2:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 2,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.4,
+        "request_revision": true,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:revise:L2:r1": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L2",
+        "title": "The hub rule",
+        "objective_ids": [
+          "OBJ-HUB"
+        ],
+        "prerequisite_ids": [
+          "L1"
+        ],
+        "topics": [
+          "hub rule",
+          "regional hub"
+        ],
+        "body": "Under the Nortia hub rule, every inter-region move passes through exactly one regional hub before the destination dock.",
+        "claims": [
+          {
+            "id": "L2-C1",
+            "text": "Under the Nortia hub rule, every inter-region move passes through exactly one regional hub before the destination dock.",
+            "citation_ids": [
+              "F-HUB"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L2:r1": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L2-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-HUB"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L2:r1": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 5,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.9,
+        "request_revision": false,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:draft:L3": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L3",
+        "title": "Dwell time and cold-chain bands",
+        "objective_ids": [
+          "OBJ-DWELL",
+          "OBJ-COLD"
+        ],
+        "prerequisite_ids": [
+          "L2"
+        ],
+        "topics": [
+          "dwell time",
+          "cold-chain"
+        ],
+        "body": "Dwell time is the hours a shipment waits at a dock, and it is counted separately from transit time. Nortia cold-chain bands are labeled blue, amber, and frost, and each band names a temperature range used only in this training. Keep these two clocks separate, then name the band.",
+        "claims": [
+          {
+            "id": "L3-C1",
+            "text": "Dwell time is the hours a shipment waits at a dock, and it is counted separately from transit time.",
+            "citation_ids": [
+              "F-DWELL"
+            ]
+          },
+          {
+            "id": "L3-C2",
+            "text": "Nortia cold-chain bands are labeled blue, amber, and frost, and each band names a temperature range used only in this training.",
+            "citation_ids": [
+              "F-COLD"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L3:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L3-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-DWELL"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L3:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 5,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.93,
+        "request_revision": false,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    },
+    "writer:draft:L4": {
+      "usage": {
+        "prompt_tokens": 300,
+        "completion_tokens": 200
+      },
+      "content": {
+        "id": "L4",
+        "title": "Exception codes",
+        "objective_ids": [
+          "OBJ-EXCEPTION"
+        ],
+        "prerequisite_ids": [
+          "L3"
+        ],
+        "topics": [
+          "exception code"
+        ],
+        "body": "A missed handoff uses exception code MH-14, and a late hub scan uses exception code LH-02.",
+        "claims": [
+          {
+            "id": "L4-C1",
+            "text": "A missed handoff uses exception code MH-14, and a late hub scan uses exception code LH-02.",
+            "citation_ids": [
+              "F-EXCEPTION"
+            ]
+          }
+        ]
+      }
+    },
+    "verifier:L4:r0": {
+      "usage": {
+        "prompt_tokens": 80,
+        "completion_tokens": 40
+      },
+      "content": {
+        "claim_reviews": [
+          {
+            "claim_id": "L4-C1",
+            "supported": true,
+            "corpus_ids": [
+              "F-EXCEPTION"
+            ]
+          }
+        ]
+      }
+    },
+    "critic:L4:r0": {
+      "usage": {
+        "prompt_tokens": 90,
+        "completion_tokens": 50
+      },
+      "content": {
+        "rubric_version": "1.0.0",
+        "scores": {
+          "accuracy": 5,
+          "clarity": 5,
+          "flow": 5,
+          "no_redundancy": 5,
+          "safety": 5
+        },
+        "confidence": 0.55,
+        "request_revision": false,
+        "safety_block": false,
+        "comments": [
+          "Synthetic critic note for a fictional lesson."
+        ]
+      }
+    }
+  }
+}

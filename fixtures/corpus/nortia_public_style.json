@@ -1,0 +1,59 @@
+{
+  "id": "nortia-public-style-v1",
+  "label": "synthetic",
+  "disclaimer": "Fictional corpus written for this exercise. It is not a real publication.",
+  "facts": [
+    {
+      "id": "F-WAYBILL",
+      "text": "A Nortia waybill lists the origin dock, the destination dock, the cargo class, and a four-character handoff token.",
+      "terms": [
+        "waybill",
+        "origin dock",
+        "destination dock",
+        "cargo class",
+        "handoff token"
+      ],
+      "source": "nortia-training-glossary-v1"
+    },
+    {
+      "id": "F-HUB",
+      "text": "Under the Nortia hub rule, every inter-region move passes through exactly one regional hub before the destination dock.",
+      "terms": [
+        "hub rule",
+        "regional hub",
+        "inter-region"
+      ],
+      "source": "nortia-routing-note-v1"
+    },
+    {
+      "id": "F-DWELL",
+      "text": "Dwell time is the hours a shipment waits at a dock, and it is counted separately from transit time.",
+      "terms": [
+        "dwell time",
+        "transit time"
+      ],
+      "source": "nortia-time-note-v1"
+    },
+    {
+      "id": "F-COLD",
+      "text": "Nortia cold-chain bands are labeled blue, amber, and frost, and each band names a temperature range used only in this training.",
+      "terms": [
+        "cold-chain",
+        "blue",
+        "amber",
+        "frost"
+      ],
+      "source": "nortia-cold-band-card-v1"
+    },
+    {
+      "id": "F-EXCEPTION",
+      "text": "A missed handoff uses exception code MH-14, and a late hub scan uses exception code LH-02.",
+      "terms": [
+        "exception code",
+        "MH-14",
+        "LH-02"
+      ],
+      "source": "nortia-exception-card-v1"
+    }
+  ]
+}

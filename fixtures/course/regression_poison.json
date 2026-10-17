@@ -1,0 +1,12 @@
+{
+  "org": "Nortia Learning",
+  "course_id": "NL-LOG-101P",
+  "title": "Foundations of Fictional Logistics (poisoned-document slice)",
+  "domain_label": "100% synthetic; fictional domain",
+  "objectives": [
+    {
+      "id": "OBJ-WAYBILL",
+      "text": "Define a Nortia waybill and the fields it lists."
+    }
+  ]
+}

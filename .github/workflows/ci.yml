@@ -1,0 +1,88 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Ruff
+        run: python -m ruff check src tests && python -m ruff format --check src tests
+
+  types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Mypy
+        run: python -m mypy
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Pytest
+        run: python -m pytest
+
+  eval:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Invariant gate
+        run: python -m hemp eval
+
+  eval-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Forced regression must go red
+        run: |
+          set +e
+          python -m hemp eval-regression > /tmp/hemp-reg.txt
+          status=$?
+          set -e
+          cat /tmp/hemp-reg.txt
+          test "$status" -eq 1
+          grep -q GATE_RED /tmp/hemp-reg.txt
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: python -m pip install -e .
+      - name: Secret scan
+        run: python -m hemp.secretscan

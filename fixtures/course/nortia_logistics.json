@@ -1,0 +1,28 @@
+{
+  "org": "Nortia Learning",
+  "course_id": "NL-LOG-101",
+  "title": "Foundations of Fictional Logistics",
+  "domain_label": "100% synthetic; fictional domain",
+  "objectives": [
+    {
+      "id": "OBJ-WAYBILL",
+      "text": "Define a Nortia waybill and the fields it lists."
+    },
+    {
+      "id": "OBJ-HUB",
+      "text": "Explain the Nortia hub rule for an inter-region move."
+    },
+    {
+      "id": "OBJ-DWELL",
+      "text": "Distinguish dwell time from transit time."
+    },
+    {
+      "id": "OBJ-COLD",
+      "text": "Name the Nortia cold-chain band labels."
+    },
+    {
+      "id": "OBJ-EXCEPTION",
+      "text": "State the exception codes for a missed handoff and a late hub scan."
+    }
+  ]
+}
