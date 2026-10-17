@@ -12,7 +12,7 @@ Nortia Learning and the course "Foundations of Fictional Logistics" are invented
 
 A training team that drafts lessons with a model still has to know what was already said, which sentences are grounded, and who signed off. This pipeline keeps that state in the open: a running summary, a deterministic checker, a versioned rubric, and a trace.
 
-Measured on 2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **59 passed, line coverage 89.07%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
+Measured on 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **59 passed, line coverage 89.07%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
 
 ## What this proves / does not prove
 
@@ -71,7 +71,7 @@ The checker, not the critic step, decides whether a draft is clean. The critic s
 
 ## Results
 
-Measured 2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1` on the happy path. No vendor calls.
+Measured 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1` on the happy path. No vendor calls.
 
 | Check | Result |
 | --- | --- |
