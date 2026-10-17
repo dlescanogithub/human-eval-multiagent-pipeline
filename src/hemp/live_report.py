@@ -144,11 +144,13 @@ def _read_ledger(path: Path) -> list[dict[str, Any]]:
 def _cost_cell(rows: list[dict[str, Any]]) -> tuple[str, int, int]:
     tokens_in = 0
     tokens_out = 0
+    cached = 0
     total = 0.0
     unknown = False
     for row in rows:
         tokens_in += int(row.get("tokens_in", 0))
         tokens_out += int(row.get("tokens_out", 0))
+        cached += int(row.get("cached_tokens", 0))
         cost = row.get("cost")
         if cost == "unknown" or not isinstance(cost, (int, float)):
             unknown = True
@@ -158,4 +160,7 @@ def _cost_cell(rows: list[dict[str, Any]]) -> tuple[str, int, int]:
         return "not measured yet", 0, 0
     if unknown:
         return "unknown", tokens_in, tokens_out
-    return f"{total} USD; {NOT_A_MEASUREMENT}", tokens_in, tokens_out
+    note = ""
+    if cached:
+        note = " overestimate: cached prompt tokens are priced as full input tokens;"
+    return f"{total} USD;{note} {NOT_A_MEASUREMENT}", tokens_in, tokens_out

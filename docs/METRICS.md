@@ -2,19 +2,19 @@
 
 Success, for this repo, means the gate can go green on a clean course and red on a bad one, with a trace a person can read. It does not mean a business outcome was observed.
 
-## Measured (2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`)
+## Measured (2026-10-17, package 0.1.3, commit `ccafba8048f54f825c77af89744895f0c7f0c659`)
 
 | Metric | Value | Command |
 | --- | --- | --- |
-| Tests | 59 passed | `python -m pytest` (pytest 9.1.1, Python 3.12.3) |
-| Line coverage | 89.07% | same command, floor 80% in `pyproject.toml` |
+| Tests | 67 passed | `python -m pytest` (pytest 9.1.1, Python 3.12.3) |
+| Line coverage | 89.06% | same command, floor 80% in `pyproject.toml` |
 | Happy gate | `EVAL_PASS`, 17/17 invariants (10 safety, 7 quality) | `python -m hemp eval` |
 | Regression gate | exit 1, `GATE_RED` | `python -m hemp eval-regression` |
 | Happy lessons approved | 4/4 | `python -m hemp demo` |
 | Revision used | L2 writer_calls = 2 | same |
 | Adaptive raters | L4 required_raters = 3; others 2 | same |
 | Agreement computation demo | 48 synthetic items; careful/moderate Cohen 0.383399, 95% interval 0.120690 to 0.667984 | `python -m hemp agreement-demo` (seeds 20261017 and 20261018). Not a human study |
-| Local cassette p50 / p95 | 2.414 ms / 2.454 ms | 21 in-process happy-case runs, nearest-rank |
+| Local cassette p50 / p95 | 2.373 ms / 2.483 ms | 21 in-process happy-case runs, nearest-rank, one warm call first |
 | judge-vs-human agreement | not measured yet | `python -m hemp review agreement --file labels/human_labels.template.csv` |
 | Live cost per approved piece | not measured yet | `python -m hemp live` was not pointed at a model |
 
