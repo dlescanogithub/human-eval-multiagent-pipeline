@@ -1,6 +1,6 @@
 # human-eval-multiagent-pipeline
 
-Default mode = deterministic fakes (tests orchestration, checker, gates). Optional live mode = real models for writer/verifier/critic. Real-model results: none yet.
+Default mode = deterministic fakes (tests orchestration, checker, gates). The live path is implementado, verificación live con un modelo real: pendiente. Real-model results: none yet.
 
 **100% synthetic; fictional domain.** A multi-step generation-and-review pipeline for one fictional course. Writer, verifier, and critic are roles replayed from cassettes by default. The repository name says "multiagent"; renaming it is the owner's decision. On the default path those roles are sequential cassette steps.
 
@@ -12,7 +12,7 @@ Nortia Learning and the course "Foundations of Fictional Logistics" are invented
 
 A training team that drafts lessons with a model still has to know what was already said, which sentences are grounded, and who signed off. This pipeline keeps that state in the open: a running summary, a deterministic checker, a versioned rubric, and a trace.
 
-Measured on 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **59 passed, line coverage 89.07%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
+Measured on 2026-10-17, package 0.1.3, commit `ccafba8048f54f825c77af89744895f0c7f0c659`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **67 passed, line coverage 89.06%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
 
 ## What this proves / does not prove
 
@@ -67,11 +67,11 @@ flowchart TD
   decision --> trace[Trace JSONL]
 ```
 
-The checker, not the critic step, decides whether a draft is clean. The critic step can ask for another pass. Publication still needs the rubric's review count. Low critic confidence raises that count from 2 to 3. An optional live provider can replace the cassette outside CI; demo and eval never select it.
+The checker, not the critic step, decides whether a draft is clean. The critic step can ask for another pass. Publication still needs the rubric's review count. Low critic confidence raises that count from 2 to 3. A live provider exists in code and can replace the cassette outside CI; demo and eval never select it. That path is implementado, verificación live con un modelo real: pendiente.
 
 ## Results
 
-Measured 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a283f70`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1` on the happy path. No vendor calls.
+Measured 2026-10-17, package 0.1.3, commit `ccafba8048f54f825c77af89744895f0c7f0c659`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1` on the happy path. No vendor calls.
 
 | Check | Result |
 | --- | --- |
@@ -83,7 +83,7 @@ Measured 2026-10-17, package 0.1.2, commit `52541f8d6ec255e2a3aafaaf8d3db9267a28
 | Uncited cassette | quality fail, safety pass, codes `uncited_claim`, `uncited_term`, `objective_gap` |
 | Poisoned document | quality fail, safety pass, codes `uncited_claim`, `uncited_term`, `objective_gap`, published 0. A fake that drops citations when the corpus contains `EMBEDDED-INSTRUCTION` |
 | Regression process exit | 1, stdout contains `GATE_RED` |
-| Pytest | 59 passed, coverage 89.07% |
+| Pytest | 67 passed, coverage 89.06% |
 | judge-vs-human agreement | not measured yet |
 
 ### Agreement computation demo
@@ -110,7 +110,7 @@ judge-vs-human agreement: not measured yet.
 
 ### Live results
 
-No live run is claimed. Real-model results: none yet. The optional provider is off unless `LIVE_LLM=1`, and CI does not set that flag. Paste a measured row into [docs/LIVE_RUN_TEMPLATE.md](docs/LIVE_RUN_TEMPLATE.md) only after a run you reviewed. `python -m hemp live-summary --dir var/live-evals/<stamp>` renders one page from a local report. That directory is gitignored.
+No live run is claimed. The live path is implementado, verificación live con un modelo real: pendiente. Real-model results: none yet. The provider is off unless `LIVE_LLM=1`, and CI does not set that flag. Paste a measured row into [docs/LIVE_RUN_TEMPLATE.md](docs/LIVE_RUN_TEMPLATE.md) only after a run you reviewed. `python -m hemp live-summary --dir var/live-evals/<stamp>` renders one page from a local report. That directory is gitignored.
 
 | date | model_writer | model_verifier | model_critic | command | n_pieces | cost | invariant_pass_rates | notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -130,7 +130,7 @@ Simulated cost for the happy cassette, using the [EST] rate card in `fixtures/co
 | Per approved lesson | 12.01025 simulated USD | total / 4 |
 | All-human baseline | 320 simulated USD | 4 lessons times [EST] 120 minutes times [EST] 40 USD/hour |
 
-Local cassette latency, same date, 21 sequential in-process calls of the happy case, nearest-rank index `round(p * (n - 1))`: **p50 2.414 ms, p95 2.454 ms**. That is checker-and-cassette time on this machine, not a model round trip.
+Local cassette latency, same date, 21 sequential in-process calls of the happy case, nearest-rank index `round(p * (n - 1))`: **p50 2.373 ms, p95 2.483 ms**. That is checker-and-cassette time on this machine, not a model round trip. Remeasured on commit `ccafba8048f54f825c77af89744895f0c7f0c659`.
 
 ## Use cases, governance and business strategy
 
@@ -177,7 +177,7 @@ Design-only versus implemented:
 | What may be published, and the rubric version | `rubrics/rubric-v1.json`, `src/hemp/review/queue.py` (`decide`) |
 | Human approval, including the synthetic stand-in | `src/hemp/cli.py` (`review decide`), `src/hemp/review/server.py`, `src/hemp/review/synthetic_raters.py` |
 | Nothing external is called on the default path | `src/hemp/providers/cassette.py`, `src/hemp/evalkit/invariants.py` (`no_unapproved_external_action`) |
-| Optional live provider, closed unless configured | `src/hemp/providers/llm_openai_compatible.py`, `src/hemp/config.py` (`load_live_config`). Exit 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD`. Exit 3 (`BUDGET_EXHAUSTED`) when the cap is hit. Prices only from the environment |
+| Live provider in code, closed unless configured | `src/hemp/providers/llm_openai_compatible.py`, `src/hemp/providers/step_schema.py`, `src/hemp/config.py` (`load_live_config`). Each step prompt names the step and the JSON schema. Exit 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD`. Exit 3 (`BUDGET_EXHAUSTED`) when the cap is hit. Prices only from the environment. implementado, verificación live con un modelo real: pendiente |
 | Traceability | `src/hemp/trace.py`, demo artifact `trace.jsonl` |
 | Agreement computation demo, CSV import, and the empty judge-vs-human sheet | `src/hemp/review/agreement_demo.py`, `fixtures/agreement/human_labels_template.csv`, `labels/human_labels.template.csv`. judge-vs-human agreement: not measured yet |
 | Risks | [docs/RISKS.md](docs/RISKS.md) |

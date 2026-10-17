@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.3 — 2026-10-17
+
+- Each live step (outline, writer, verifier, critic) names itself, its input, and the exact JSON object to return, with a minimal example, and asks for only that JSON.
+- A bad object is extracted from a ```json fence when one is present, rejected with an actionable schema error, and retried at most twice. Each retry reserves the worst case against the spend cap before the call. A lesson object where an outline was required says that the lessons list is missing.
+- Reported cached prompt tokens are stored on the ledger. The live cost formula still prices every prompt token at `LLM_PRICE_IN_PER_MTOK`, so a cache hit is an overestimate. No cached price is stored.
+- The live path is implementado, verificación live con un modelo real: pendiente. Real-model results: none yet. Cost per approved piece: not measured yet.
+
 ## 0.1.2 — 2026-10-17
 
 - Optional live provider `llm_openai_compatible` for an OpenAI-compatible chat-completions API. Off unless `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD` is greater than 0. Exit 2 without that config. Exit 3 (`BUDGET_EXHAUSTED`) when the spend or token cap is hit. Prices come only from the environment. No live result is claimed. Cost per approved piece: not measured yet.
