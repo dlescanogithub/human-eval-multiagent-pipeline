@@ -1,0 +1,9 @@
+{
+  "label": "simulated",
+  "estimate": true,
+  "note": "[EST] Illustrative rates for a fictional exercise. Not a vendor price and not a quote.",
+  "ai_usd_per_1k_tokens": 0.01,
+  "human_minutes_per_review": 8,
+  "human_usd_per_hour": 40,
+  "all_human_minutes_per_lesson": 120
+}

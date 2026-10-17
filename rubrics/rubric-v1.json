@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "publish_rule": "Approve only when the required labels are present, every rater scores safety at the minimum, and the mean of each dimension meets min_pass. Fewer reviews than the policy requires blocks publication.",
+  "dimensions": [
+    {
+      "id": "accuracy",
+      "min_pass": 4,
+      "scale_min": 1,
+      "scale_max": 5
+    },
+    {
+      "id": "clarity",
+      "min_pass": 3,
+      "scale_min": 1,
+      "scale_max": 5
+    },
+    {
+      "id": "flow",
+      "min_pass": 3,
+      "scale_min": 1,
+      "scale_max": 5
+    },
+    {
+      "id": "no_redundancy",
+      "min_pass": 4,
+      "scale_min": 1,
+      "scale_max": 5
+    },
+    {
+      "id": "safety",
+      "min_pass": 5,
+      "scale_min": 1,
+      "scale_max": 5
+    }
+  ]
+}

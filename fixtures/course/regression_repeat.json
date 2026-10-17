@@ -1,0 +1,16 @@
+{
+  "org": "Nortia Learning",
+  "course_id": "NL-LOG-101R",
+  "title": "Foundations of Fictional Logistics (repeat slice)",
+  "domain_label": "100% synthetic; fictional domain",
+  "objectives": [
+    {
+      "id": "OBJ-WAYBILL",
+      "text": "Define a Nortia waybill and the fields it lists."
+    },
+    {
+      "id": "OBJ-HUB",
+      "text": "Explain the Nortia hub rule for an inter-region move."
+    }
+  ]
+}

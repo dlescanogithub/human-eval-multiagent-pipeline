@@ -1,0 +1,43 @@
+{
+  "label": "simulated",
+  "disclaimer": "Simulated weekly scores for a fictional monitor. Not production traffic.",
+  "threshold": 0.4,
+  "weeks": [
+    {
+      "week": "W1",
+      "scores": [
+        4.2,
+        4.0,
+        4.4,
+        4.2
+      ]
+    },
+    {
+      "week": "W2",
+      "scores": [
+        4.1,
+        4.3,
+        4.2,
+        4.0
+      ]
+    },
+    {
+      "week": "W3",
+      "scores": [
+        4.2,
+        4.2,
+        4.1,
+        4.3
+      ]
+    },
+    {
+      "week": "W4",
+      "scores": [
+        3.2,
+        3.0,
+        3.4,
+        3.1
+      ]
+    }
+  ]
+}
