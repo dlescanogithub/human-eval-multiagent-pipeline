@@ -9,6 +9,7 @@ from hemp.similarity import digest
 class Usage:
     prompt_tokens: int
     completion_tokens: int
+    cached_tokens: int = 0
 
     @property
     def total(self) -> int:
@@ -18,6 +19,7 @@ class Usage:
         return Usage(
             self.prompt_tokens + other.prompt_tokens,
             self.completion_tokens + other.completion_tokens,
+            self.cached_tokens + other.cached_tokens,
         )
 
 

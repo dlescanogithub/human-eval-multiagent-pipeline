@@ -22,6 +22,7 @@ from hemp.providers.llm_openai_compatible import (
     parse_retry_after,
     validate_citation_ids,
 )
+from hemp.providers.step_schema import OUTLINE_EXAMPLE, VERIFIER_EXAMPLE
 from hemp.review.human_labels import NOT_MEASURED, export_template, judge_human_agreement
 
 
@@ -66,8 +67,9 @@ def _config(**overrides: object) -> LiveConfig:
 
 
 def _ok(prompt: int = 100, completion: int = 50, content: dict[str, object] | None = None) -> HttpResponse:
+    body = dict(OUTLINE_EXAMPLE) if content is None else content
     payload = {
-        "choices": [{"message": {"content": json.dumps(content or {"ok": True})}}],
+        "choices": [{"message": {"content": json.dumps(body)}}],
         "usage": {"prompt_tokens": prompt, "completion_tokens": completion},
     }
     return HttpResponse(200, {}, json.dumps(payload).encode("utf-8"))
@@ -95,6 +97,7 @@ def _provider(config: LiveConfig, transport: object, **kwargs: object) -> LlmOpe
         backoff_base_seconds=float(kwargs.get("backoff_base_seconds", 0.5)),  # type: ignore[arg-type]
         backoff_cap_seconds=float(kwargs.get("backoff_cap_seconds", 8.0)),  # type: ignore[arg-type]
         ledger_path=kwargs.get("ledger_path"),  # type: ignore[arg-type]
+        max_schema_retries=int(kwargs.get("max_schema_retries", 2)),  # type: ignore[arg-type]
     )
 
 
@@ -147,6 +150,9 @@ def test_role_model_selection_and_delimited_data() -> None:
     assert body["model"] == "writer-model"
     assert body["temperature"] == 0
     messages = build_messages(request)
+    assert "STEP: writer" in messages[0]["content"]
+    assert "Return ONLY one JSON object" in messages[0]["content"]
+    assert "citation_ids" in messages[0]["content"]
     assert poison not in messages[0]["content"]
     assert "<untrusted-data" in messages[1]["content"]
     assert poison in messages[1]["content"]
@@ -169,7 +175,8 @@ def test_retry_policy_redaction_and_ledger(tmp_path: Path) -> None:
     ledger = tmp_path / "spend.jsonl"
     provider = _provider(_config(), transport, sleep=waits.append, rng=FixedRng(0.0), ledger_path=ledger)
     completion = provider.complete(CompletionRequest("writer", "outline", {"lesson": "L1"}))
-    assert completion.content == {"ok": True}
+    assert completion.content["course_id"] == "NL-LOG-101"
+    assert completion.content["lessons"]
     assert completion.model == "fake-model"
     assert waits == [1.5]
     row = json.loads(ledger.read_text(encoding="utf-8").splitlines()[0])
@@ -261,7 +268,7 @@ def test_budget_reservation_exhaustion_and_unknown_price(tmp_path: Path) -> None
     assert calls["n"] == 0
 
     def unknown_transport(url: str, body: bytes, headers: dict[str, str], timeout: float) -> HttpResponse:
-        return _ok(prompt=4, completion=6)
+        return _ok(prompt=4, completion=6, content=dict(VERIFIER_EXAMPLE))
 
     unknown = _config(price_in_per_mtok=None, price_out_per_mtok=None, max_live_tokens=1000)
     ledger = tmp_path / "unknown.jsonl"
