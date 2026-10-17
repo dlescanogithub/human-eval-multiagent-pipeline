@@ -16,7 +16,7 @@ These small utilities are maintained in parallel across portfolio repositories a
 
 `src/hemp/secretscan.py` is the copy in this repository. It is meant to stay identical to the copies in the other portfolio repositories.
 
-src/hemp/secretscan.py sha256 854fb05c30f89011a18c6d85575fab5d37d259e51bf30a2c754105c608335aa8
+secretscan.py sha256: 2cdf0339ef5a85d4f6439e94c973b5858375f9da0e2d38da9b503e06d0f6dff7
 
 Check that line with `make secretscan-hash`. `python -m pytest` checks the same digest.
 

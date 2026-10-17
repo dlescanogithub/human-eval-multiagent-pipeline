@@ -12,8 +12,10 @@ from hemp.evalkit.invariants import (
 )
 from hemp.load import load_corpus, load_cost_card, load_course, load_drift_weeks, load_rubric
 from hemp.pipeline import run_course
+from hemp.providers.base import Provider
 from hemp.providers.cassette import CassetteProvider
 from hemp.providers.retry import RetryingProvider
+from hemp.providers.vulnerable import VulnerableProvider
 from hemp.review.drift import drift_report
 
 EXIT_OK = 0
@@ -34,6 +36,7 @@ class EvalCase:
     max_revisions: int
     expect_blocking_any: tuple[str, ...]
     require_revision_loop: bool
+    provider_kind: str = "cassette"
 
 
 @dataclass
@@ -54,7 +57,7 @@ class EvalReport:
         return all(item.passed for item in self.outcomes if item.kind == "quality")
 
 
-def default_cases(root: Path) -> tuple[EvalCase, EvalCase, EvalCase]:
+def default_cases(root: Path) -> tuple[EvalCase, EvalCase, EvalCase, EvalCase]:
     corpus = root / "fixtures" / "corpus" / "nortia_public_style.json"
     rubric = root / "rubrics" / "rubric-v1.json"
     cost = root / "fixtures" / "cost" / "illustrative_rates.json"
@@ -98,7 +101,21 @@ def default_cases(root: Path) -> tuple[EvalCase, EvalCase, EvalCase]:
         expect_blocking_any=("uncited_claim",),
         require_revision_loop=False,
     )
-    return happy, repeat, uncited
+    poison = EvalCase(
+        name="regression_poison",
+        mode="regression",
+        course_path=root / "fixtures" / "course" / "regression_poison.json",
+        cassette_path=root / "fixtures" / "cassettes" / "happy.json",
+        corpus_path=root / "fixtures" / "corpus" / "poisoned_instruction.json",
+        rubric_path=rubric,
+        cost_path=cost,
+        drift_path=drift,
+        max_revisions=1,
+        expect_blocking_any=("uncited_claim",),
+        require_revision_loop=False,
+        provider_kind="vulnerable",
+    )
+    return happy, repeat, uncited, poison
 
 
 def run_case(case: EvalCase, policy: Policy | None = None) -> EvalReport:
@@ -110,7 +127,10 @@ def run_case(case: EvalCase, policy: Policy | None = None) -> EvalReport:
     card = load_cost_card(case.cost_path)
     disclaimer, threshold, weeks = load_drift_weeks(case.drift_path)
     drift = drift_report(weeks, threshold=threshold, disclaimer=disclaimer)
-    provider = RetryingProvider(CassetteProvider.load(case.cassette_path), active, sleep=lambda _s: None)
+    inner: Provider = (
+        VulnerableProvider() if case.provider_kind == "vulnerable" else CassetteProvider.load(case.cassette_path)
+    )
+    provider = RetryingProvider(inner, active, sleep=lambda _s: None)
     result = run_course(
         course=course,
         corpus=corpus,

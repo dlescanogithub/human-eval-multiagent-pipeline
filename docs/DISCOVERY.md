@@ -30,4 +30,4 @@ Ten questions to ask before copying this pipeline into a real organisation. Each
    Recommended shape: run drafts and traces, publish nothing, compare checker findings with what reviewers would have blocked. Exit when the content owner trusts the block list. This repo can already stop at `generate` (nothing approved). It cannot ingest a real reviewer's historical decisions.
 
 10. **What is out of bounds for the model vendor?**
-    Default here is no vendor. The live command stays off unless `LIVE_MODE=1` and the base URL, model, key, spend cap, prices, and price date are all set. Turning that on is an explicit decision, not a default, and CI does not do it. The questions are region, retention, and whether lesson text may leave the machine.
+    Default here is no vendor. The live command stays off unless `LIVE_LLM=1` and the base URL, model, key, and spend cap are set. Prices, if any, come from the environment at run time and are not stored here. Turning that on is an explicit decision, not a default, and CI does not do it. The questions are region, retention, and whether lesson text may leave the machine.

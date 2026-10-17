@@ -3,14 +3,17 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import sys
 import time
 from collections.abc import Callable
+from datetime import UTC, datetime
 from pathlib import Path
 
 from hemp import __version__
 from hemp.config import LiveConfig, Policy, find_root, load_live_config, load_settings
-from hemp.errors import ConfigError, HempError
+from hemp.errors import BudgetExhausted, ConfigError, HempError
 from hemp.evalkit.runner import default_cases, exit_code, format_report, run_case
+from hemp.live_report import load_report, render_markdown, write_run
 from hemp.load import (
     load_corpus,
     load_cost_card,
@@ -24,13 +27,14 @@ from hemp.models import Corpus, CostCard, CourseSpec, PipelineResult, ReviewLabe
 from hemp.pipeline import generate_course, run_course
 from hemp.providers.base import Provider
 from hemp.providers.cassette import CassetteProvider
-from hemp.providers.openai_compat import OpenAICompatProvider
+from hemp.providers.llm_openai_compatible import LlmOpenAICompatible, redact
 from hemp.providers.retry import RetryingProvider
 from hemp.review.agreement_demo import computation_demo, format_computation_demo, import_labels_csv
 from hemp.review.drift import drift_report
+from hemp.review.human_labels import NOT_MEASURED, export_template, judge_human_agreement
 from hemp.review.queue import add_label, dump_queue, load_queue, save_queue
 from hemp.review.server import serve
-from hemp.secretscan import main as secretscan_main
+from hemp.secretscan import scan_repo
 
 LOGGER_NAME = "hemp.cli"
 
@@ -53,6 +57,11 @@ def main(argv: list[str] | None = None) -> int:
     review_sub = review.add_subparsers(dest="review_command", required=True)
     listing = review_sub.add_parser("list")
     listing.add_argument("--queue", required=True)
+    exported = review_sub.add_parser("export", help="write an empty human_verdict template; does not invent labels")
+    exported.add_argument("--n", type=int, default=30)
+    exported.add_argument("--out", default="labels/human_labels.template.csv")
+    agreement = review_sub.add_parser("agreement", help="judge-vs-human agreement from a filled CSV")
+    agreement.add_argument("--file", required=True)
     decide = review_sub.add_parser("decide")
     decide.add_argument("--queue", required=True)
     decide.add_argument("--piece", required=True)
@@ -69,10 +78,14 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("agreement-demo", help="seeded synthetic agreement computation demo (not a human study)")
     imported = sub.add_parser("agreement-import", help="compute agreement from a CSV of labels")
     imported.add_argument("--csv", required=True)
-    sub.add_parser(
+    live = sub.add_parser(
         "live",
-        help="optional live provider; exits 2 unless LIVE_MODE=1 and every live setting is set",
+        help="optional live models; exits 2 unless LIVE_LLM=1 and MAX_LIVE_SPEND_USD is set",
     )
+    live.add_argument("--pieces", type=int, default=None)
+    live.add_argument("--seed", type=int, default=None)
+    summary = sub.add_parser("live-summary", help="render a one-page markdown summary of a live run directory")
+    summary.add_argument("--dir", required=True)
 
     args = parser.parse_args(argv)
     root = Path(args.root).resolve() if args.root else find_root()
@@ -89,16 +102,18 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "drift":
         return _drift(root, Path(args.input))
     if args.command == "secretscan":
-        return secretscan_main([str(root)])
+        return _secretscan(root)
     if args.command == "agreement-demo":
         print(format_computation_demo(computation_demo()))
         return 0
     if args.command == "agreement-import":
         return _agreement_import(root, Path(args.csv))
     if args.command == "live":
-        return _live(root)
+        return _live(root, pieces=args.pieces, seed=args.seed)
+    if args.command == "live-summary":
+        return _live_summary(root, Path(args.dir))
     if args.command == "review":
-        return _review(args)
+        return _review(root, args)
     return 2
 
 
@@ -267,66 +282,150 @@ def _agreement_import(root: Path, csv_path: Path) -> int:
     return 0
 
 
-def default_live_provider(root: Path, config: LiveConfig) -> OpenAICompatProvider:
-    path = root / "var" / "live" / "cassette.json"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    return OpenAICompatProvider(
+def default_live_provider(root: Path, config: LiveConfig) -> LlmOpenAICompatible:
+    ledger = root / "var" / "live-evals" / "manual" / "spend.jsonl"
+    return LlmOpenAICompatible(
         config,
-        live_mode=True,
-        cassette_path=path,
+        ledger_path=ledger,
         sleep=lambda seconds: time.sleep(seconds),
     )
 
 
 def _live(
     root: Path,
+    *,
+    pieces: int | None = None,
+    seed: int | None = None,
     provider_factory: Callable[[Path, LiveConfig], Provider] | None = None,
 ) -> int:
+    if pieces is not None and pieces < 1:
+        return _refuse_live("--pieces must be >= 1", "")
     try:
         config = load_live_config()
     except ConfigError as exc:
-        return _refuse_live(str(exc))
-    factory = provider_factory or default_live_provider
+        return _refuse_live(str(exc), "")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    out_dir = root / "var" / "live-evals" / stamp
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    def _default(path: Path, live: LiveConfig) -> LlmOpenAICompatible:
+        del path
+        return LlmOpenAICompatible(
+            live,
+            ledger_path=out_dir / "spend.jsonl",
+            sleep=lambda seconds: time.sleep(seconds),
+        )
+
+    factory = provider_factory or _default
     try:
         provider = factory(root, config)
-        return _run_live_pipeline(root, provider)
     except HempError as exc:
-        log_event(logging.getLogger(LOGGER_NAME), "live_failed", error=exc.__class__.__name__)
-        print(json.dumps({"error": str(exc), "event": "live_failed", "exit_code": 2}, sort_keys=True))
-        return 2
+        return _fail_live(str(exc), config.api_key)
+    return _run_live_pipeline(
+        root,
+        provider,
+        config,
+        out_dir,
+        pieces=pieces,
+        seed=seed,
+    )
 
 
-def _refuse_live(reason: str) -> int:
-    log_event(logging.getLogger(LOGGER_NAME), "live_refused", reason=reason)
-    print(json.dumps({"event": "live_refused", "exit_code": 2, "reason": reason}, sort_keys=True))
+def _refuse_live(reason: str, secret: str) -> int:
+    public = redact(reason, secret)
+    log_event(logging.getLogger(LOGGER_NAME), "live_refused", reason=public)
+    print(json.dumps({"event": "live_refused", "exit_code": 2, "reason": public}, sort_keys=True))
     return 2
 
 
-def _run_live_pipeline(root: Path, provider: Provider) -> int:
+def _fail_live(reason: str, secret: str) -> int:
+    public = redact(reason, secret)
+    log_event(logging.getLogger(LOGGER_NAME), "live_failed", error="HempError")
+    print(json.dumps({"error": public, "event": "live_failed", "exit_code": 2}, sort_keys=True))
+    return 2
+
+
+def _run_live_pipeline(
+    root: Path,
+    provider: Provider,
+    config: LiveConfig,
+    out_dir: Path,
+    *,
+    pieces: int | None,
+    seed: int | None,
+) -> int:
     """Same lesson pipeline as generate. Nothing is approved. No live figure is claimed."""
     course, corpus, rubric, _card, _cassette = _load_happy(root)
     policy = _policy(root)
-    out_dir = root / "var" / "live"
-    out_dir.mkdir(parents=True, exist_ok=True)
-    result = generate_course(
-        course=course,
-        corpus=corpus,
-        rubric=rubric,
-        provider=provider,
-        policy=policy,
-        trace_path=out_dir / "trace.jsonl",
-    )
+    command = _live_command(pieces, seed)
+    models = {
+        "writer": config.model_writer,
+        "verifier": config.model_verifier,
+        "critic": config.model_critic,
+    }
+    date = datetime.now(UTC).date().isoformat()
+    try:
+        result = generate_course(
+            course=course,
+            corpus=corpus,
+            rubric=rubric,
+            provider=provider,
+            policy=policy,
+            trace_path=out_dir / "trace.jsonl",
+            pieces=pieces,
+            seed=seed,
+        )
+    except BudgetExhausted as exc:
+        partial = exc.partial if isinstance(exc.partial, PipelineResult) else None
+        report = write_run(
+            out_dir,
+            result=partial,
+            status="BUDGET_EXHAUSTED",
+            models=models,
+            pieces=pieces,
+            seed=seed,
+            command=command,
+            date=date,
+        )
+        log_event(logging.getLogger(LOGGER_NAME), "budget_exhausted", report_dir=str(out_dir))
+        print(
+            json.dumps(
+                {
+                    "event": "budget_exhausted",
+                    "exit_code": 3,
+                    "live_result_claimed": False,
+                    "report_dir": str(out_dir),
+                    "status": "BUDGET_EXHAUSTED",
+                    "cost": report["cost"],
+                },
+                sort_keys=True,
+            )
+        )
+        return 3
+    except HempError as exc:
+        return _fail_live(str(exc), config.api_key)
     queue_payload = dump_queue(result.items, rubric_version=rubric.version, mins=rubric.mins())
     save_queue(out_dir / "queue.json", queue_payload)
+    report = write_run(
+        out_dir,
+        result=result,
+        status="finished",
+        models=models,
+        pieces=pieces,
+        seed=seed,
+        command=command,
+        date=date,
+    )
     summary = {
         "event": "live_pipeline_finished",
+        "exit_code": 0,
         "live_result_claimed": False,
-        "note": (
-            "No live result is published. Items stay pending for human review. Any cassette under var/ is gitignored."
-        ),
-        "pending": sum(1 for item in result.items if item.status == "pending"),
+        "note": "No live result is published. Items stay pending. The report under var/live-evals/ is gitignored.",
+        "pending": report["pending"],
         "provider": result.provider_name,
-        "published": sum(1 for item in result.items if item.status == "approved"),
+        "published": report["published"],
+        "report_dir": str(out_dir),
+        "cost": report["cost"],
     }
     print(json.dumps(summary, sort_keys=True))
     log_event(
@@ -338,9 +437,40 @@ def _run_live_pipeline(root: Path, provider: Provider) -> int:
     return 0
 
 
+def _live_command(pieces: int | None, seed: int | None) -> str:
+    command = "python -m hemp live"
+    if pieces is not None:
+        command += f" --pieces {pieces}"
+    if seed is not None:
+        command += f" --seed {seed}"
+    return command
+
+
+def _live_summary(root: Path, directory: Path) -> int:
+    source = directory if directory.is_absolute() else root / directory
+    try:
+        report = load_report(source)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError):
+        payload = {"event": "live_summary_failed", "exit_code": 2, "reason": "report not readable"}
+        print(json.dumps(payload, sort_keys=True))
+        return 2
+    print(render_markdown(report), end="")
+    return 0
+
+
+def _secretscan(root: Path) -> int:
+    findings = scan_repo(root)
+    if findings:
+        for item in findings:
+            print(item, file=sys.stderr)
+        return 1
+    print("secret scan: no findings")
+    return 0
+
+
 def _eval(root: Path, *, expect_red: bool) -> int:
-    happy, repeat, uncited = default_cases(root)
-    cases = [repeat, uncited] if expect_red else [happy]
+    happy, repeat, uncited, poison = default_cases(root)
+    cases = [repeat, uncited, poison] if expect_red else [happy]
     reports = [run_case(case, _policy(root)) for case in cases]
     code = exit_code(reports, expect_red=expect_red)
     print(format_report(reports, expect_red=expect_red, code=code), end="")
@@ -355,7 +485,11 @@ def _drift(root: Path, path: Path) -> int:
     return 0
 
 
-def _review(args: argparse.Namespace) -> int:
+def _review(root: Path, args: argparse.Namespace) -> int:
+    if args.review_command == "export":
+        return _review_export(root, args.n, Path(args.out))
+    if args.review_command == "agreement":
+        return _review_agreement(root, Path(args.file))
     if args.review_command == "list":
         _version, _mins, items = load_queue(Path(args.queue))
         for item in items:
@@ -384,6 +518,34 @@ def _review(args: argparse.Namespace) -> int:
         print(f"{match.piece_id} {match.status} synthetic={label.synthetic}")
         return 0
     return 2
+
+
+def _review_export(root: Path, n: int, out: Path) -> int:
+    dest = out if out.is_absolute() else root / out
+    course, corpus, _rubric, _card, _cassette = _load_happy(root)
+    try:
+        report = export_template(corpus, dest, n=n, course_id=course.course_id)
+    except ValueError as exc:
+        print(json.dumps({"event": "review_export_failed", "exit_code": 2, "reason": str(exc)}, sort_keys=True))
+        return 2
+    report["summary"] = NOT_MEASURED
+    print(json.dumps(report, sort_keys=True))
+    return 0
+
+
+def _review_agreement(root: Path, path: Path) -> int:
+    source = path if path.is_absolute() else root / path
+    if not source.is_file():
+        payload = {"event": "review_agreement_failed", "exit_code": 2, "reason": "file not found"}
+        print(json.dumps(payload, sort_keys=True))
+        return 2
+    try:
+        report = judge_human_agreement(source)
+    except ValueError as exc:
+        print(json.dumps({"event": "review_agreement_failed", "exit_code": 2, "reason": str(exc)}, sort_keys=True))
+        return 2
+    print(json.dumps(report, indent=2, sort_keys=True))
+    return 0
 
 
 def _parse_scores(raw: str) -> dict[str, int]:

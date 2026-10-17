@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import logging
+import random
 from dataclasses import replace
 from typing import Any
 
 from hemp.checker import check_lesson, course_objective_findings
 from hemp.config import Policy
 from hemp.costing import compute_cost
-from hemp.errors import SchemaError
+from hemp.errors import BudgetExhausted, SchemaError
 from hemp.load import parse_critic, parse_lesson, parse_outline
 from hemp.logging_setup import log_event
 from hemp.models import (
@@ -17,6 +18,7 @@ from hemp.models import (
     CourseSpec,
     Lesson,
     LessonRun,
+    Outline,
     PipelineResult,
     QueueItem,
     Rubric,
@@ -33,6 +35,22 @@ from hemp.trace import TraceLog
 LOGGER = logging.getLogger("hemp.pipeline")
 
 
+def _untrusted(corpus: Corpus, prior: object) -> dict[str, object]:
+    return {
+        "corpus": [{"id": fact.id, "text": fact.text} for fact in corpus.facts],
+        "prior_output": prior,
+    }
+
+
+def _limit_outline(outline: Outline, *, pieces: int | None, seed: int | None) -> Outline:
+    lessons = list(outline.lessons)
+    if seed is not None:
+        random.Random(seed).shuffle(lessons)
+    if pieces is not None:
+        lessons = lessons[:pieces]
+    return Outline(outline.course_id, outline.title, tuple(lessons))
+
+
 def generate_course(
     *,
     course: CourseSpec,
@@ -42,20 +60,75 @@ def generate_course(
     policy: Policy,
     clock: Any = None,
     trace_path: Any = None,
+    pieces: int | None = None,
+    seed: int | None = None,
 ) -> PipelineResult:
     """Run outline → lessons → checker. Accepted lessons wait in the queue. Nothing is published."""
     trace = TraceLog(rubric_version=rubric.version, clock=clock, path=trace_path)
     usage = Usage(0, 0)
+    summary = RunningSummary()
+    runs: list[LessonRun] = []
     trace.add("course_started", course_id=course.course_id, provider=provider.name)
-    outline_completion = provider.complete(
+
+    def _finish(runs: list[LessonRun], summary: RunningSummary, usage: Usage) -> PipelineResult:
+        accepted_lessons = tuple(run.lesson for run in runs if run.accepted)
+        findings = course_objective_findings(course, accepted_lessons)
+        effects = ("queue_human_review",) if any(run.item is not None for run in runs) else ()
+        trace.add(
+            "course_generated",
+            course_id=course.course_id,
+            accepted_lesson_ids=[lesson.id for lesson in accepted_lessons],
+            course_finding_codes=[finding.code for finding in findings],
+        )
+        log_event(
+            LOGGER,
+            "course_generated",
+            course_id=course.course_id,
+            accepted=len(accepted_lessons),
+            provider=provider.name,
+        )
+        return PipelineResult(
+            course_id=course.course_id,
+            rubric_version=rubric.version,
+            provider_name=provider.name,
+            lessons=tuple(runs),
+            summary=summary,
+            items=tuple(run.item for run in runs if run.item is not None),
+            effects=effects,
+            trace=tuple(trace.events),
+            usage=usage,
+            course_findings=findings,
+            agreement=None,
+            cost=None,
+            approval_basis="none",
+            max_revisions=policy.max_revisions,
+        )
+
+    def _call(request: CompletionRequest) -> Any:
+        nonlocal usage
+        try:
+            completion = provider.complete(request)
+        except BudgetExhausted as exc:
+            trace.add("budget_exhausted", role=request.role, step=request.step)
+            exc.partial = _finish(runs, summary, usage)
+            raise
+        usage = usage.add(completion.usage)
+        return completion
+
+    outline_completion = _call(
         CompletionRequest(
             role="writer",
             step="outline",
-            payload={"course_id": course.course_id, "rubric_version": rubric.version},
+            payload={
+                "course_id": course.course_id,
+                "rubric_version": rubric.version,
+                "objective_ids": list(course.objective_ids()),
+                "untrusted_data": _untrusted(corpus, None),
+            },
         )
     )
-    usage = usage.add(outline_completion.usage)
     outline = parse_outline(outline_completion.content)
+    outline = _limit_outline(outline, pieces=pieces, seed=seed)
     if outline.course_id != course.course_id:
         raise SchemaError("outline course_id does not match the course spec")
     trace.add(
@@ -65,8 +138,6 @@ def generate_course(
         provider=outline_completion.provider,
     )
 
-    summary = RunningSummary()
-    runs: list[LessonRun] = []
     accepted: list[Lesson] = []
     accepted_bodies: list[str] = []
     accepted_sentences: list[str] = []
@@ -90,7 +161,7 @@ def generate_course(
                 summary=summary.to_dict(),
                 provider=provider.name,
             )
-            completion = provider.complete(
+            completion = _call(
                 CompletionRequest(
                     role="writer",
                     step=step,
@@ -105,10 +176,10 @@ def generate_course(
                         "running_summary": summary.to_dict(),
                         "feedback": feedback,
                         "rubric_version": rubric.version,
+                        "untrusted_data": _untrusted(corpus, feedback),
                     },
                 )
             )
-            usage = usage.add(completion.usage)
             writer_calls += 1
             lesson = parse_lesson(completion.content)
             if (
@@ -125,28 +196,42 @@ def generate_course(
                 model=completion.model,
             )
             agent_step = f"{spec.id}:r{revision}"
-            verified = provider.complete(
+            lesson_data = {
+                "id": lesson.id,
+                "body": lesson.body,
+                "claims": [
+                    {"id": claim.id, "text": claim.text, "citation_ids": list(claim.citation_ids)}
+                    for claim in lesson.claims
+                ],
+            }
+            verified = _call(
                 CompletionRequest(
                     role="verifier",
                     step=agent_step,
-                    payload={"lesson_id": spec.id, "rubric_version": rubric.version},
+                    payload={
+                        "lesson_id": spec.id,
+                        "rubric_version": rubric.version,
+                        "untrusted_data": _untrusted(corpus, lesson_data),
+                    },
                 )
             )
-            usage = usage.add(verified.usage)
             trace.add(
                 "verifier_agent",
                 lesson_id=spec.id,
                 revision=revision,
                 provider=verified.provider,
             )
-            critique = provider.complete(
+            critique = _call(
                 CompletionRequest(
                     role="critic",
                     step=agent_step,
-                    payload={"lesson_id": spec.id, "rubric_version": rubric.version},
+                    payload={
+                        "lesson_id": spec.id,
+                        "rubric_version": rubric.version,
+                        "untrusted_data": _untrusted(corpus, {"verifier": verified.content, "lesson": lesson_data}),
+                    },
                 )
             )
-            usage = usage.add(critique.usage)
             critic = parse_critic(critique.content, rubric)
             if critic.rubric_version != rubric.version:
                 raise SchemaError("critic rubric_version does not match the loaded rubric")
@@ -245,38 +330,7 @@ def generate_course(
             )
         )
 
-    accepted_lessons = tuple(run.lesson for run in runs if run.accepted)
-    findings = course_objective_findings(course, accepted_lessons)
-    effects = ("queue_human_review",) if any(run.item is not None for run in runs) else ()
-    trace.add(
-        "course_generated",
-        course_id=course.course_id,
-        accepted_lesson_ids=[lesson.id for lesson in accepted_lessons],
-        course_finding_codes=[finding.code for finding in findings],
-    )
-    log_event(
-        LOGGER,
-        "course_generated",
-        course_id=course.course_id,
-        accepted=len(accepted_lessons),
-        provider=provider.name,
-    )
-    return PipelineResult(
-        course_id=course.course_id,
-        rubric_version=rubric.version,
-        provider_name=provider.name,
-        lessons=tuple(runs),
-        summary=summary,
-        items=tuple(run.item for run in runs if run.item is not None),
-        effects=effects,
-        trace=tuple(trace.events),
-        usage=usage,
-        course_findings=findings,
-        agreement=None,
-        cost=None,
-        approval_basis="none",
-        max_revisions=policy.max_revisions,
-    )
+    return _finish(runs, summary, usage)
 
 
 def finalize_synthetic(
@@ -358,6 +412,8 @@ def run_course(
     card: CostCard,
     clock: Any = None,
     trace_path: Any = None,
+    pieces: int | None = None,
+    seed: int | None = None,
 ) -> PipelineResult:
     generated = generate_course(
         course=course,
@@ -367,5 +423,7 @@ def run_course(
         policy=policy,
         clock=clock,
         trace_path=trace_path,
+        pieces=pieces,
+        seed=seed,
     )
     return finalize_synthetic(generated, policy=policy, rubric=rubric, card=card)

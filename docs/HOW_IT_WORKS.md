@@ -43,6 +43,18 @@ El gate de eval no compara la lista de llamadas. Pregunta invariantes: ¿se publ
 - La página local no tiene login. Es para tu máquina.
 - El acuerdo que muestra el demo es un computation demo: raters sintéticos, semilla, intervalo. No lo cites como personas. Si más adelante hay etiquetas reales, el camino es el CSV `fixtures/agreement/human_labels_template.csv` y `python -m hemp agreement-import`. Este repo no publica una cifra de acuerdo humano.
 - El costo en dólares sale de una tarifa inventada. Los tokens del demo sí salen del cassette.
-- `python -m hemp live` es optativo y está apagado. Sin `LIVE_MODE=1` y el resto de la configuración sale con código 2 y no llama a nadie. CI no lo prende. No hay un resultado en vivo para mostrar.
+- El acuerdo juez-contra-humano no está medido. La frase, hasta que completes la planilla, es: judge-vs-human agreement: not measured yet.
+
+## ¿Qué parte es de verdad multiagente?
+
+Mirá: el nombre del repo dice multiagente, y eso se puede leer de más. En el modo por defecto el writer, el verifier y el critic no llaman a un modelo. Son respuestas guardadas en un cassette, en orden. Eso alcanza para probar la orquestación, el checker y los gates. CI corre solo ese modo. Los fakes son deterministas: si repetís el comando, el gate da lo mismo.
+
+El modo en vivo es optativo. Con `LIVE_LLM=1`, un tope `MAX_LIVE_SPEND_USD` mayor a cero, y la URL, la clave y el modelo en el entorno, esos tres roles le pegan a una API de chat compatible (completions por HTTP). Cada rol puede tener su modelo: `LLM_MODEL_WRITER`, `LLM_MODEL_VERIFIER`, `LLM_MODEL_CRITIC`. Si no los ponés, usan `LLM_MODEL`. El texto del corpus y lo que dijo el rol anterior viajan como datos, entre marcas `<untrusted-data>`, no como órdenes. El checker sigue siendo código: cada claim citado, nada sin cita se publica, y la redundancia se mide igual. El comando es `python -m hemp live --pieces N`. `make live` es ese comando con `--pieces 1`.
+
+Sin esa configuración el comando sale con código 2 y no abre la red. Si el gasto o los tokens se pasan del tope, sale con código 3 (`BUDGET_EXHAUSTED`). Eso no es un gate rojo: el gate rojo sigue siendo el código 1. Los precios no están en el repo. Si querés un costo en dólares, exportá `LLM_PRICE_IN_PER_MTOK` y `LLM_PRICE_OUT_PER_MTOK`. Si no los tenés, poné `MAX_LIVE_TOKENS` y el costo queda como `unknown`. No hay una corrida real para mostrar: no hay clave acá y la tabla de resultados en vivo está vacía.
+
+Una instrucción metida adentro de un documento del corpus no alcanza para publicar ni para sacar la cita. Hay un fake que obedece esa instrucción a propósito (`EMBEDDED-INSTRUCTION`). El gate igual se pone rojo y no publica. Eso está en la regresión forzada.
+
+El panel de 48 ítems sigue siendo un computation demo de la fórmula. El acuerdo con una persona es otra cosa: `python -m hemp review export --n 30` escribe `labels/human_labels.template.csv` con `human_verdict` vacío. Hasta que lo completes a mano, judge-vs-human agreement: not measured yet.
 
 Si te preguntan "¿y en producción?", la respuesta honesta está en [ADAPT_TO_A_REAL_CLIENT.md](ADAPT_TO_A_REAL_CLIENT.md): primero discovery, después sombra, después el gate. Este repo es el ensayo con datos ficticios.

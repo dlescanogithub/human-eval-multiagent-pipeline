@@ -24,3 +24,13 @@ class MissingCassetteError(ProviderError):
 
 class EvalError(HempError):
     """The eval runner refused to start or could not finish."""
+
+
+class BudgetExhausted(HempError):
+    """The live spend or token cap was reached. Distinct from a red gate."""
+
+    def __init__(self, message: str, *, cost: float | str | None = None) -> None:
+        super().__init__(message)
+        self.status = "BUDGET_EXHAUSTED"
+        self.partial: object | None = None
+        self.cost = cost

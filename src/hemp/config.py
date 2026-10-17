@@ -46,12 +46,30 @@ class LiveConfig:
     """Settings for one optional live run. Absent unless ``load_live_config`` succeeds."""
 
     base_url: str
-    model: str
     api_key: str
+    model: str
+    model_writer: str
+    model_verifier: str
+    model_critic: str
+    max_output_tokens: int
+    timeout_s: float
     max_spend_usd: float
-    prompt_usd_per_1k: float
-    completion_usd_per_1k: float
-    price_date: str
+    price_in_per_mtok: float | None
+    price_out_per_mtok: float | None
+    max_live_tokens: int | None
+
+    def model_for(self, role: str) -> str:
+        if role == "writer":
+            return self.model_writer
+        if role == "verifier":
+            return self.model_verifier
+        if role == "critic":
+            return self.model_critic
+        return self.model
+
+    @property
+    def prices_known(self) -> bool:
+        return self.price_in_per_mtok is not None and self.price_out_per_mtok is not None
 
 
 @dataclass(frozen=True)
@@ -102,47 +120,85 @@ def load_settings(
     )
 
 
-_LIVE_REQUIRED = (
-    "LLM_BASE_URL",
-    "LLM_MODEL",
-    "LLM_API_KEY",
-    "MAX_LIVE_SPEND_USD",
-    "LLM_PROMPT_USD_PER_1K",
-    "LLM_COMPLETION_USD_PER_1K",
-    "LLM_PRICE_DATE",
-)
+def _optional_float(env: dict[str, str], name: str) -> float | None:
+    raw = env.get(name, "").strip()
+    if not raw:
+        return None
+    try:
+        return float(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be a number") from exc
+
+
+def _optional_int(env: dict[str, str], name: str) -> int | None:
+    raw = env.get(name, "").strip()
+    if not raw:
+        return None
+    try:
+        value = int(raw)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be an integer") from exc
+    return value
 
 
 def load_live_config(environ: dict[str, str] | None = None) -> LiveConfig:
-    """Closed door: missing ``LIVE_MODE=1`` or any price field raises ``ConfigError``.
+    """Closed door. Demo and eval do not call this.
 
-    Demo and eval do not call this. A live command turns the error into exit 2.
+    ``LIVE_LLM=1`` and ``MAX_LIVE_SPEND_USD`` (> 0) are required. Prices come only
+    from the environment. When they are unset, ``MAX_LIVE_TOKENS`` is required and
+    cost is reported as unknown.
     """
-    env = os.environ if environ is None else environ
-    if env.get("LIVE_MODE", "0") != "1":
-        raise ConfigError("LIVE_MODE is not 1; the live provider is off")
-    missing = [name for name in _LIVE_REQUIRED if not env.get(name, "").strip()]
+    env = dict(os.environ if environ is None else environ)
+    if env.get("LIVE_LLM", "0") != "1":
+        raise ConfigError("LIVE_LLM is not 1; the live provider is off")
+    missing = [
+        name
+        for name in ("LLM_BASE_URL", "LLM_API_KEY", "LLM_MODEL", "MAX_LIVE_SPEND_USD")
+        if not env.get(name, "").strip()
+    ]
     if missing:
         raise ConfigError("live config missing: " + ",".join(missing))
     try:
         max_spend = float(env["MAX_LIVE_SPEND_USD"])
-        prompt_price = float(env["LLM_PROMPT_USD_PER_1K"])
-        completion_price = float(env["LLM_COMPLETION_USD_PER_1K"])
     except ValueError as exc:
-        raise ConfigError(
-            "MAX_LIVE_SPEND_USD, LLM_PROMPT_USD_PER_1K, and LLM_COMPLETION_USD_PER_1K must be numbers"
-        ) from exc
-    if max_spend <= 0 or prompt_price < 0 or completion_price < 0:
-        raise ConfigError("MAX_LIVE_SPEND_USD must be positive and prices must be non-negative")
-    price_date = env["LLM_PRICE_DATE"].strip()
-    if len(price_date) != 10 or price_date[4] != "-" or price_date[7] != "-":
-        raise ConfigError("LLM_PRICE_DATE must be YYYY-MM-DD")
+        raise ConfigError("MAX_LIVE_SPEND_USD must be a number") from exc
+    if max_spend <= 0:
+        raise ConfigError("MAX_LIVE_SPEND_USD must be > 0")
+    price_in = _optional_float(env, "LLM_PRICE_IN_PER_MTOK")
+    price_out = _optional_float(env, "LLM_PRICE_OUT_PER_MTOK")
+    if (price_in is None) != (price_out is None):
+        raise ConfigError("set both LLM_PRICE_IN_PER_MTOK and LLM_PRICE_OUT_PER_MTOK, or neither")
+    if price_in is not None and (price_in < 0 or price_out is None or price_out < 0):
+        raise ConfigError("live prices must be non-negative")
+    max_tokens = _optional_int(env, "MAX_LIVE_TOKENS")
+    if price_in is None and (max_tokens is None or max_tokens <= 0):
+        raise ConfigError("MAX_LIVE_TOKENS is required and must be > 0 when live prices are unset")
+    if max_tokens is not None and max_tokens <= 0:
+        raise ConfigError("MAX_LIVE_TOKENS must be > 0")
+    max_output = _optional_int(env, "LLM_MAX_OUTPUT_TOKENS") or 1024
+    if max_output <= 0:
+        raise ConfigError("LLM_MAX_OUTPUT_TOKENS must be > 0")
+    timeout_raw = env.get("LLM_TIMEOUT_S", "").strip()
+    timeout_s = 30.0
+    if timeout_raw:
+        try:
+            timeout_s = float(timeout_raw)
+        except ValueError as exc:
+            raise ConfigError("LLM_TIMEOUT_S must be a number") from exc
+    if timeout_s <= 0:
+        raise ConfigError("LLM_TIMEOUT_S must be > 0")
+    model = env["LLM_MODEL"].strip()
     return LiveConfig(
         base_url=env["LLM_BASE_URL"].strip(),
-        model=env["LLM_MODEL"].strip(),
         api_key=env["LLM_API_KEY"].strip(),
+        model=model,
+        model_writer=env.get("LLM_MODEL_WRITER", "").strip() or model,
+        model_verifier=env.get("LLM_MODEL_VERIFIER", "").strip() or model,
+        model_critic=env.get("LLM_MODEL_CRITIC", "").strip() or model,
+        max_output_tokens=max_output,
+        timeout_s=timeout_s,
         max_spend_usd=max_spend,
-        prompt_usd_per_1k=prompt_price,
-        completion_usd_per_1k=completion_price,
-        price_date=price_date,
+        price_in_per_mtok=price_in,
+        price_out_per_mtok=price_out,
+        max_live_tokens=max_tokens,
     )

@@ -1,5 +1,7 @@
 # human-eval-multiagent-pipeline
 
+Default mode = deterministic fakes (tests orchestration, checker, gates). Optional live mode = real models for writer/verifier/critic. Real-model results: none yet.
+
 **100% synthetic; fictional domain.** A multi-step generation-and-review pipeline for one fictional course. Writer, verifier, and critic are roles replayed from cassettes by default. The repository name says "multiagent"; renaming it is the owner's decision. On the default path those roles are sequential cassette steps.
 
 **Before any publication:** the checklist in [docs/IP_AND_PROVENANCE.md](docs/IP_AND_PROVENANCE.md). This repository stays private until that list is done.
@@ -10,13 +12,13 @@ Nortia Learning and the course "Foundations of Fictional Logistics" are invented
 
 A training team that drafts lessons with a model still has to know what was already said, which sentences are grounded, and who signed off. This pipeline keeps that state in the open: a running summary, a deterministic checker, a versioned rubric, and a trace.
 
-Measured on 2026-10-17, package 0.1.1, commit `daf0126776808a9d9a44f4b5d64d7bcfc0e374cf`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **38 passed, line coverage 91.36%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
+Measured on 2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`, Python 3.12.3, pytest 9.1.1, command `python -m pytest`: **59 passed, line coverage 89.07%**. The same tree's happy gate (`python -m hemp eval`) published 4 of 4 lessons after one revision. The forced regression (`python -m hemp eval-regression`) exited 1 and printed `GATE_RED`.
 
 ## What this proves / does not prove
 
-This proves that, on the fictional Nortia course, the checker blocks a cassette that repeats an earlier lesson or emits an uncited claim, and that the happy cassette reaches `approved` only after the required synthetic reviews. `python -m hemp agreement-demo` proves that Cohen's kappa, Fleiss' kappa, and nominal Krippendorff's alpha, with a bootstrap interval over items, run on a seeded panel of 48 synthetic items and three documented reliabilities.
+This proves that, on the fictional Nortia course, the checker blocks a cassette that repeats an earlier lesson or emits an uncited claim, and that a fake which obeys an instruction embedded in a source document still does not publish. The happy cassette reaches `approved` only after the required synthetic reviews. `python -m hemp agreement-demo` proves that Cohen's kappa, Fleiss' kappa, and nominal Krippendorff's alpha, with a bootstrap interval over items, run on a seeded panel of 48 synthetic items and three documented reliabilities.
 
-It does not prove that people agree. It does not prove that a live model would pass the gate. It does not prove that the simulated dollars were saved by a team. It does not prove that several model agents collaborated: the default roles are cassette steps. No live result is claimed.
+It does not prove that people agree. judge-vs-human agreement: not measured yet. It does not prove that a live model would pass the gate. Real-model results: none yet. It does not prove that the simulated dollars were saved by a team. It does not prove that several model agents collaborated on the default path: those roles are cassette steps until `LIVE_LLM=1` is set outside CI. No live result is claimed.
 
 ## Demo
 
@@ -34,6 +36,15 @@ python -m hemp agreement-import --csv path/to/labels.csv
 ```
 
 The empty template imports as status `empty` and emits no coefficient. This repository does not ship filled human labels and does not claim a real agreement figure.
+
+Judge versus human, which is a different file from that panel:
+
+```bash
+python -m hemp review export --n 30
+python -m hemp review agreement --file labels/human_labels.template.csv
+```
+
+`review export` writes `labels/human_labels.template.csv` (piece id, claim, source excerpt, empty `human_verdict`, checker `judge_verdict`). On that empty file the agreement command prints `judge-vs-human agreement: not measured yet`. Copy it to `labels/human_labels.csv` (gitignored) and fill `human_verdict` by hand before treating a kappa as a measurement. The 48-item panel above is a computation demo of the metric code. It is not this figure.
 
 ## Business case
 
@@ -60,18 +71,20 @@ The checker, not the critic step, decides whether a draft is clean. The critic s
 
 ## Results
 
-Measured 2026-10-17, package 0.1.1, commit `daf0126776808a9d9a44f4b5d64d7bcfc0e374cf`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1`. No vendor calls.
+Measured 2026-10-17, package 0.1.2, commit `COMMIT_SHA_HERE`, commands `python -m hemp eval`, `python -m hemp eval-regression`, and `python -m hemp demo`. Provider `fake-cassette-v1` on the happy path. No vendor calls.
 
 | Check | Result |
 | --- | --- |
-| Happy invariants | 16/16 pass (9 safety, 7 quality), `EVAL_PASS` |
+| Happy invariants | 17/17 pass (10 safety, 7 quality), `EVAL_PASS` |
 | Lessons published on the happy course | 4/4 |
 | Writer calls | L1=1, L2=2, L3=1, L4=1 |
 | Required raters | L1–L3 = 2; L4 = 3 because critic confidence was 0.55 |
 | Repeat cassette | quality fail, safety pass, codes `redundancy`, `repetition`, `objective_gap` |
 | Uncited cassette | quality fail, safety pass, codes `uncited_claim`, `uncited_term`, `objective_gap` |
+| Poisoned document | quality fail, safety pass, codes `uncited_claim`, `uncited_term`, `objective_gap`, published 0. A fake that drops citations when the corpus contains `EMBEDDED-INSTRUCTION` |
 | Regression process exit | 1, stdout contains `GATE_RED` |
-| Pytest | 38 passed, coverage 91.36% |
+| Pytest | 59 passed, coverage 89.07% |
+| judge-vs-human agreement | not measured yet |
 
 ### Agreement computation demo
 
@@ -93,13 +106,15 @@ Synthetic raters only. The numbers demonstrate the metric code. They are not rea
 
 The 4-lesson course queue is not an agreement result. Do not cite it as one.
 
+judge-vs-human agreement: not measured yet.
+
 ### Live results
 
-No live run is claimed. The optional provider is off by default and is not used in CI.
+No live run is claimed. Real-model results: none yet. The optional provider is off unless `LIVE_LLM=1`, and CI does not set that flag. Paste a measured row into [docs/LIVE_RUN_TEMPLATE.md](docs/LIVE_RUN_TEMPLATE.md) only after a run you reviewed. `python -m hemp live-summary --dir var/live-evals/<stamp>` renders one page from a local report. That directory is gitignored.
 
-| Date | Model | Command | Published | Notes |
-| --- | --- | --- | --- | --- |
-|  |  |  |  |  |
+| date | model_writer | model_verifier | model_critic | command | n_pieces | cost | invariant_pass_rates | notes |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+|  |  |  |  |  |  |  |  |  |
 
 Simulated cost for the happy cassette, using the [EST] rate card in `fixtures/cost/illustrative_rates.json`:
 
@@ -115,7 +130,7 @@ Simulated cost for the happy cassette, using the [EST] rate card in `fixtures/co
 | Per approved lesson | 12.01025 simulated USD | total / 4 |
 | All-human baseline | 320 simulated USD | 4 lessons times [EST] 120 minutes times [EST] 40 USD/hour |
 
-Local cassette latency, same date, 21 sequential in-process calls of the happy case, nearest-rank index `round(p * (n - 1))`: **p50 2.379 ms, p95 2.492 ms**. That is checker-and-cassette time on this machine, not a model round trip.
+Local cassette latency, same date, 21 sequential in-process calls of the happy case, nearest-rank index `round(p * (n - 1))`: **p50 2.414 ms, p95 2.454 ms**. That is checker-and-cassette time on this machine, not a model round trip.
 
 ## Use cases, governance and business strategy
 
@@ -145,7 +160,7 @@ Design-only versus implemented:
 | Cassette and in-memory providers; optional live chat-completions provider behind env, off by default, not used in CI | Implemented. No live result is claimed |
 | Rubric as code: citations, grounding, redundancy, repetition, prerequisites, objective coverage, safety phrases | Implemented |
 | Review queue as files, CLI, and a local page on 127.0.0.1 | Implemented |
-| Cohen, Fleiss, Krippendorff, and bootstrap intervals | Implemented as a computation demo on 48 synthetic items. CSV import is implemented. A human study is not |
+| Cohen, Fleiss, Krippendorff, and bootstrap intervals | Implemented as a computation demo on 48 synthetic items. CSV import is implemented. A human study is not. judge-vs-human agreement: not measured yet |
 | Adaptive review count when critic confidence is under 0.7 | Implemented |
 | Drift report on a simulated weekly series | Implemented |
 | Trace JSONL with rubric version, revisions, and the publish decision | Implemented |
@@ -162,9 +177,9 @@ Design-only versus implemented:
 | What may be published, and the rubric version | `rubrics/rubric-v1.json`, `src/hemp/review/queue.py` (`decide`) |
 | Human approval, including the synthetic stand-in | `src/hemp/cli.py` (`review decide`), `src/hemp/review/server.py`, `src/hemp/review/synthetic_raters.py` |
 | Nothing external is called on the default path | `src/hemp/providers/cassette.py`, `src/hemp/evalkit/invariants.py` (`no_unapproved_external_action`) |
-| Optional live provider, closed unless configured | `src/hemp/providers/openai_compat.py`, `src/hemp/config.py` (`load_live_config`). Exit 2 without `LIVE_MODE=1` and the live settings |
+| Optional live provider, closed unless configured | `src/hemp/providers/llm_openai_compatible.py`, `src/hemp/config.py` (`load_live_config`). Exit 2 without `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD`. Exit 3 (`BUDGET_EXHAUSTED`) when the cap is hit. Prices only from the environment |
 | Traceability | `src/hemp/trace.py`, demo artifact `trace.jsonl` |
-| Agreement computation demo and CSV import | `src/hemp/review/agreement_demo.py`, `fixtures/agreement/human_labels_template.csv` |
+| Agreement computation demo, CSV import, and the empty judge-vs-human sheet | `src/hemp/review/agreement_demo.py`, `fixtures/agreement/human_labels_template.csv`, `labels/human_labels.template.csv`. judge-vs-human agreement: not measured yet |
 | Risks | [docs/RISKS.md](docs/RISKS.md) |
 | Costs | [docs/COST.md](docs/COST.md) |
 | Incident and rollback | [docs/RUNBOOK.md](docs/RUNBOOK.md) |
@@ -178,8 +193,8 @@ Not covered yet:
 - Retention and deletion of real learner data (there is none here)
 - Legal review of published claims against a real statute
 - A signed audit export for a customer
-- Load, abuse, or prompt-injection testing against a live model
-- A filled human-label file, or any real agreement figure
+- A live-model run, or a prompt-injection test against a real model. The poisoned-document regression uses a local fake
+- A filled human-label file, or any real agreement figure. judge-vs-human agreement: not measured yet
 - Making this repository public
 
 ### 3. Business strategy
@@ -201,11 +216,11 @@ Deployment Strategist conversation: start with discovery, not a model choice. Wh
 
 What this does **not** do:
 
-- It does not call a model unless `python -m hemp live` is run outside CI with `LIVE_MODE=1` and every live setting set. Missing config exits 2 and makes no request. CI never sets that flag. Demo and eval ignore it.
+- It does not call a model unless `python -m hemp live` is run outside CI with `LIVE_LLM=1`, `MAX_LIVE_SPEND_USD` greater than 0, and the base URL, key, and model set. Missing config exits 2 and makes no request. Hitting the spend or token cap exits 3 (`BUDGET_EXHAUSTED`), which is not `GATE_RED`. CI never sets `LIVE_LLM`. Demo and eval ignore it. Prices are not stored in the repo.
 - It does not publish to a website, an LMS, or an inbox. "Published" means the local queue status is `approved`.
 - It does not retrieve from a vector database.
 - It does not authenticate reviewers. The local page binds to 127.0.0.1 and has no login.
-- It does not measure human agreement. The agreement demo uses synthetic raters. The CSV import does not certify who produced a file.
+- It does not measure human agreement. The agreement demo uses synthetic raters. judge-vs-human agreement: not measured yet. The CSV import does not certify who produced a file.
 - It does not know whether a sentence is true in the world. It knows whether the sentence overlaps a fictional corpus card and carries that card's id.
 - It does not replace a lawyer, an editor, or a content owner.
 
@@ -226,9 +241,12 @@ python -m hemp demo
 python -m hemp agreement-demo
 python -m hemp.secretscan
 make secretscan-hash
+python -m hemp review export --n 30
+python -m hemp review agreement --file labels/human_labels.template.csv
+python -m hemp live --pieces 1   # exit 2 unless LIVE_LLM=1 and MAX_LIVE_SPEND_USD is set
 ```
 
-`python -m hemp live` with no live settings exits 2. Do not point it at a paid API from CI.
+`python -m hemp live` with no live settings exits 2. `make live` is the same command with `--pieces 1`. It is not part of `make ci`. Do not point it at a paid API from CI. Cost per approved piece in live mode: not measured yet. See [docs/COST.md](docs/COST.md).
 
 If `make` is installed, the same steps are `make lint`, `make typecheck`, `make test`, `make eval`, `make eval-regression`, `make demo`, `make secrets`, and `make secretscan-hash`. `make ci` runs lint, types, tests, the happy gate, the secret scan, the hash check, and the assertion that the regression exits 1.
 
@@ -259,4 +277,5 @@ python -m hemp review serve --queue artifacts/generate/queue.json --port 8765
 - [Architecture](docs/architecture.md)
 - [Adapt to a real client](docs/ADAPT_TO_A_REAL_CLIENT.md)
 - [Provenance](docs/PROVENANCE.md)
+- [Live run template](docs/LIVE_RUN_TEMPLATE.md)
 - [IP checklist](docs/IP_AND_PROVENANCE.md)

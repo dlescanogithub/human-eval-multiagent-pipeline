@@ -24,7 +24,7 @@ flowchart TD
 | Course, corpus, rubric, cost card | `src/hemp/load.py` | JSON on disk. Corpus must be labeled `synthetic`. Cost card must be `estimate: true`. |
 | Writer / verifier / critic | `src/hemp/providers/cassette.py` | Roles replayed from a cassette, keyed by `role:step`. A missing key is an error, not a retry. |
 | Retries on the cassette path | `src/hemp/providers/retry.py` | Only `TransientProviderError`. Max attempts and a backoff cap. The cassette path does not sleep. |
-| Optional live provider | `src/hemp/providers/openai_compat.py` | OpenAI-compatible chat-completions HTTP API. Off unless `LIVE_MODE=1` and the live settings are set. Bounded retries, jitter, `Retry-After`. Writes a cassette under gitignored `var/`. Not used by demo or eval. |
+| Optional live provider | `src/hemp/providers/llm_openai_compatible.py` | OpenAI-compatible chat-completions HTTP API. Off unless `LIVE_LLM=1` and `MAX_LIVE_SPEND_USD` is set. Bounded retries, jitter, `Retry-After`. Spend ledger under gitignored `var/live-evals/`. Not used by demo or eval. No vendor price in the tree. |
 | Checker | `src/hemp/checker.py` | Citations, grounding, glossary terms, redundancy, repetition, prerequisite order, clarity length, denylist. |
 | Running summary | `src/hemp/models.py` `RunningSummary` | Updated only when a lesson is accepted. |
 | Queue and publish rule | `src/hemp/review/queue.py` | Means per dimension, safety on every label, enough labels. |

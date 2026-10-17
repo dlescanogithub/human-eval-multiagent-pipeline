@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hemp"
-version = "0.1.1"
+version = "0.1.2"
 description = "Multi-step generation-and-review pipeline with a human review gate. Cassette roles by default."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -56,6 +56,9 @@ exclude_lines = [
 target-version = "py311"
 line-length = 120
 src = ["src", "tests"]
+
+[tool.ruff.format]
+exclude = ["src/hemp/secretscan.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

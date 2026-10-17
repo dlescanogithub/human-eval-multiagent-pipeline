@@ -3,4 +3,4 @@
 100% synthetic. Fictional domain: Nortia Learning, Foundations of Fictional Logistics.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"

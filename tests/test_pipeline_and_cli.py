@@ -10,17 +10,15 @@ from hemp.config import LiveConfig, find_root, load_settings
 from hemp.errors import ConfigError, SchemaError
 from hemp.evalkit.runner import EXIT_GATE_RED, EXIT_OK, default_cases, run_case
 from hemp.load import load_course, read_json
-from hemp.providers.openai_compat import (
-    OpenAICompatProvider,
-    build_provider,
-    parse_chat_response,
-)
+from hemp.providers import build_provider, parse_chat_response
+from hemp.providers.base import CompletionRequest
+from hemp.providers.llm_openai_compatible import LlmOpenAICompatible
 from hemp.review.server import ReviewApp, render_queue, serve
-from hemp.secretscan import main as secrets_main
+from hemp.secretscan import scan_repo
 
 
 def test_happy_gate_and_regression(repo_root: Path) -> None:
-    happy, repeat, uncited = default_cases(repo_root)
+    happy, repeat, uncited, poison = default_cases(repo_root)
     happy_report = run_case(happy)
     assert happy_report.quality_passed
     assert happy_report.safety_passed
@@ -41,6 +39,13 @@ def test_happy_gate_and_regression(repo_root: Path) -> None:
     assert uncited_report.safety_passed
     assert "uncited_claim" in uncited_report.blocking_codes
     assert uncited_report.metrics["published"] == 0
+
+    poison_report = run_case(poison)
+    assert not poison_report.quality_passed
+    assert poison_report.safety_passed
+    assert "uncited_claim" in poison_report.blocking_codes
+    assert poison_report.metrics["published"] == 0
+    assert poison_report.metrics["provider"] == "fake"
 
 
 def test_cli_eval_demo_generate_and_review(repo_root: Path, tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
@@ -149,15 +154,22 @@ def test_config_and_openai_guard(repo_root: Path, tmp_path: Path) -> None:
     assert settings.allow_network is False
     live = LiveConfig(
         base_url="https://example.invalid/v1",
+        api_key="local-test-key",
         model="fake-model",
-        api_key="local-test",
+        model_writer="writer-model",
+        model_verifier="fake-model",
+        model_critic="fake-model",
+        max_output_tokens=32,
+        timeout_s=5.0,
         max_spend_usd=1.0,
-        prompt_usd_per_1k=0.0,
-        completion_usd_per_1k=0.0,
-        price_date="2026-10-17",
+        price_in_per_mtok=1.0,
+        price_out_per_mtok=1.0,
+        max_live_tokens=None,
     )
-    with pytest.raises(ConfigError):
-        OpenAICompatProvider(live, live_mode=False)
+    with pytest.raises(ConfigError, match="LIVE_LLM"):
+        from hemp.config import load_live_config
+
+        load_live_config({})
     with pytest.raises(ConfigError):
         build_provider(
             provider="openai",
@@ -198,11 +210,10 @@ def test_config_and_openai_guard(repo_root: Path, tmp_path: Path) -> None:
     assert parsed == {"lesson": "L1"}
     with pytest.raises(SchemaError):
         parse_chat_response({"choices": []})
-    body = OpenAICompatProvider(live, live_mode=True).build_body(
-        __import__("hemp.providers.base", fromlist=["CompletionRequest"]).CompletionRequest("writer", "outline", {})
-    )
+    body = LlmOpenAICompatible(live, sleep=lambda _seconds: None).build_body(CompletionRequest("writer", "outline", {}))
     assert body["temperature"] == 0
-    assert secrets_main([str(repo_root)]) == 0
+    assert body["model"] == "writer-model"
+    assert scan_repo(repo_root) == []
 
 
 def test_load_rejects_bad_course(tmp_path: Path) -> None:
