@@ -9,7 +9,7 @@ Price date / source: the card is `fixtures/cost/illustrative_rates.json`, marked
 | Happy course, demo and eval | `fake-cassette-v1` (cassette) | 2550 prompt + 1550 completion tokens; 9 synthetic reviews; 72 human-minutes [EST] | 48.041 simulated USD (AI 0.041 + human 48). Cap 80. Per approved lesson 12.01025. All-human baseline 320 simulated USD | p50 2.373 ms / p95 2.483 ms, local, 21 runs, commit `ccafba8048f54f825c77af89744895f0c7f0c659`, 2026-10-17. Not a vendor latency | 4/4 lessons approved; 17/17 invariants pass | [EST] card above. Tokens and review counts measured by `python -m hemp demo` |
 | Repeat regression | same cassette style | AI only on the calls in that cassette; 2 reviews on the clean lesson | 10.692467 simulated USD, under cap | not separately timed | quality gate red; bad lesson not published | same [EST] card; figure from `python -m hemp eval-regression` on 2026-10-17 |
 | Uncited regression | same | tokens only, no reviews (nothing queued) | 0.0182 simulated USD | not separately timed | quality gate red; nothing published | same |
-| Live runs, 2026-10-17, outside CI | xAI `grok-4.20-0309-non-reasoning`. `LIVE_LLM=1`, `MAX_LIVE_SPEND_USD=0.15`. Same model for writer, verifier, and critic | n=1: 7 calls. n=3: 25 calls. 0 parse errors and 0 format retries on n=3 | n=1 real 0.00785 USD, repo estimate 0.00879 USD. n=3 real 0.03416 USD, repo estimate 0.03994 USD. The estimate prices cached prompt tokens as full input tokens | not timed | n=1 checker accepted 1/1, item pending, published 0, `live_result_claimed=false`. n=3 checker accepted 1/3 (L2 `weak_grounding` and `repetition`; L3 `prerequisite_not_accepted` and `repetition`). live ejecutado en n=1 y n=3, muestra chica, sin tasa | Real charges from those two runs. No vendor price is stored in the repo. Cost per approved piece is not quoted |
+| Live runs, 2026-10-17, outside CI | xAI `grok-4.20-0309-non-reasoning`. `LIVE_LLM=1`, `MAX_LIVE_SPEND_USD=0.15`. Same model for writer, verifier, and critic | n=1: 7 calls. n=3: 25 calls. 0 parse errors and 0 format retries on n=3 | n=1 real 0.00785 USD, repo estimate 0.00879 USD. n=3 real 0.03416 USD, repo estimate 0.03994 USD. The estimate prices cached prompt tokens as full input tokens | not timed | n=1 checker accepted 1/1, item pending, published 0, `live_result_claimed=false`. n=3 checker accepted 1/3 (L2 `weak_grounding` and `repetition`; L3 `prerequisite_not_accepted` and `repetition`). live was run at n=1 and n=3, a small sample, with no rate | Real charges from those two runs. No vendor price is stored in the repo. Cost per approved piece is not quoted |
 
 Rate card, all [EST]:
 
@@ -24,7 +24,7 @@ Latency method: `run_case` on the happy `EvalCase`, 21 times, `time.perf_counter
 
 ## Live mode
 
-Cost per approved piece is not quoted. live ejecutado en n=1 y n=3, muestra chica, sin tasa. The two run totals are in the table above: real 0.00785 USD against a repo estimate of 0.00879 USD, and real 0.03416 USD against a repo estimate of 0.03994 USD. judge-vs-human agreement: not measured yet.
+Cost per approved piece is not quoted. live was run at n=1 and n=3, a small sample, with no rate. The two run totals are in the table above: real 0.00785 USD against a repo estimate of 0.00879 USD, and real 0.03416 USD against a repo estimate of 0.03994 USD. judge-vs-human agreement: not measured yet.
 
 When both price variables are set in the environment, and only then:
 
