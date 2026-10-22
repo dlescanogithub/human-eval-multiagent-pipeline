@@ -21,4 +21,4 @@ Keep this repository private. This file is a checklist for Diego before any publ
 
 ## Explicit non-claims
 
-This is not a replica of a real project. The agreement numbers are a computation demo on synthetic raters. This file does not state a real agreement figure. The dollar figures in the cassette cost card use an illustrative rate card marked [EST]. Two live runs are recorded in the README (2026-10-17, n=1 and n=3). live ejecutado en n=1 y n=3, muestra chica, sin tasa. This file does not turn them into a pass rate or a human-agreement figure. The domain stays fictional: Nortia Learning, Foundations of Fictional Logistics.
+This is not a replica of a real project. The agreement numbers are a computation demo on synthetic raters. This file does not state a real agreement figure. The dollar figures in the cassette cost card use an illustrative rate card marked [EST]. Two live runs are recorded in the README (2026-10-17, n=1 and n=3). live was run at n=1 and n=3, a small sample, with no rate. This file does not turn them into a pass rate or a human-agreement figure. The domain stays fictional: Nortia Learning, Foundations of Fictional Logistics.

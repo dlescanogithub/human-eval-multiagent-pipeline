@@ -1,6 +1,6 @@
 # Live run template
 
-Paste a later row from `python -m hemp live-summary --dir var/live-evals/<stamp>` only after you have reviewed that local report. The two rows below are the reviewed runs from 2026-10-17. live ejecutado en n=1 y n=3, muestra chica, sin tasa. Cost per approved piece is not quoted. judge-vs-human agreement: not measured yet.
+Paste a later row from `python -m hemp live-summary --dir var/live-evals/<stamp>` only after you have reviewed that local report. The two rows below are the reviewed runs from 2026-10-17. live was run at n=1 and n=3, a small sample, with no rate. Cost per approved piece is not quoted. judge-vs-human agreement: not measured yet.
 
 | date | model | command | n | result | real cost (USD) | repo estimate (USD) |
 | --- | --- | --- | --- | --- | --- | --- |

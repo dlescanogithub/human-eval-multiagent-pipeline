@@ -22,4 +22,4 @@ If you found a problem in a private copy, tell Diego Lescano directly. There is 
 
 ## Known limits
 
-The checker looks for a small denylist ("publish without review", "ignore the reviewer", "skip the citation", "bypass approval") and for citations against the fictional corpus. It is not a safety classifier for arbitrary text. See [docs/RISKS.md](docs/RISKS.md) and the "What this does NOT do" list in the README.
+The checker looks for a small denylist ("publish without review", "ignore the reviewer", "skip the citation", "bypass approval") and for citations against the fictional corpus. It is not a safety classifier for arbitrary text. See [docs/RISKS.md](docs/RISKS.md) and the "What this does NOT prove" section in the README.
