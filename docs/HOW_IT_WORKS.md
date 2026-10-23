@@ -1,6 +1,6 @@
 # How it works
 
-This is the version you can say out loud in an interview. **100% synthetic; fictional domain.** The company is Nortia Learning and the course is "Foundations of Fictional Logistics". It is not a real client. The agreement numbers do not come from people.
+Walkthrough for engineers and buyers. **100% synthetic; fictional domain.** The company is Nortia Learning and the course is "Foundations of Fictional Logistics". It is not a real client. The agreement numbers do not come from people.
 
 The repository stays private until the checklist in [IP_AND_PROVENANCE.md](IP_AND_PROVENANCE.md) is done. That list is still open.
 
@@ -61,4 +61,4 @@ An instruction embedded in a corpus document is not enough to publish or to drop
 
 The 48-item panel is still a computation demo of the formula. Agreement with a person is a different thing: `python -m hemp review export --n 30` writes `labels/human_labels.template.csv` with `human_verdict` empty. Until you fill it in by hand, judge-vs-human agreement: not measured yet.
 
-If someone asks "and in a real organisation?", the honest answer is in [ADAPT_TO_A_REAL_CLIENT.md](ADAPT_TO_A_REAL_CLIENT.md): discovery first, then shadow, then the gate. This repo is the rehearsal on fictional data. The dollars, the buyer, and what is measured versus not are in [BUSINESS_VALUE.md](BUSINESS_VALUE.md).
+A real organisation starts in [ADAPT_TO_A_REAL_CLIENT.md](ADAPT_TO_A_REAL_CLIENT.md): discovery, then shadow, then the gate. This repo is the rehearsal on fictional data. The dollars, the buyer, and what is measured versus not are in [BUSINESS_VALUE.md](BUSINESS_VALUE.md).
