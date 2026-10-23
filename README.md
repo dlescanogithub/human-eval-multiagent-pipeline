@@ -273,7 +273,7 @@ Details: [SECURITY.md](SECURITY.md), [docs/RISKS.md](docs/RISKS.md).
 
 ## Docs
 
-- [How it works (interview walkthrough)](docs/HOW_IT_WORKS.md)
+- [How it works](docs/HOW_IT_WORKS.md)
 - [Business value](docs/BUSINESS_VALUE.md)
 - [Business case](docs/BUSINESS_CASE.md)
 - [Discovery questions](docs/DISCOVERY.md)
