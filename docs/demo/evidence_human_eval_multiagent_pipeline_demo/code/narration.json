@@ -1,0 +1,22 @@
+[
+ {
+  "id": "A_hook",
+  "text": "A multi-agent course writer with a human review queue, on a fake cassette. One hundred percent synthetic. This demo does not call a paid A-P-I."
+ },
+ {
+  "id": "B_course",
+  "text": "Nortia Learning, Foundations of Fictional Logistics. Four lessons accepted and published with synthetic raters."
+ },
+ {
+  "id": "C_agree",
+  "text": "Agreement demo on forty-eight synthetic items. Cohen's kappa careful versus moderate about zero point three eight. Fleiss about zero point one seven six. These numbers demonstrate the metric code. They are not a human study."
+ },
+ {
+  "id": "D_cost",
+  "text": "Simulated cost about forty-eight dollars total, twelve per approved piece, versus a three hundred twenty dollar all-human baseline. E-S-T rates."
+ },
+ {
+  "id": "E_close",
+  "text": "Use it to wire generate, review, and agreement before any live writer spend. Not covered: real human agreement, a production LMS, or live quality. Live was only tried at n equals one and three outside C-I. Run python -m hemp demo. Lab path cost: zero."
+ }
+]

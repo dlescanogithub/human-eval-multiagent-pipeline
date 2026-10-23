@@ -273,6 +273,7 @@ Details: [SECURITY.md](SECURITY.md), [docs/RISKS.md](docs/RISKS.md).
 
 ## Docs
 
+- **Demo video (English, offline):** [docs/demo/README.md](docs/demo/README.md) — [`human_eval_multiagent_pipeline_demo_en.mp4`](docs/demo/human_eval_multiagent_pipeline_demo_en.mp4)
 - [How it works](docs/HOW_IT_WORKS.md)
 - [Business value](docs/BUSINESS_VALUE.md)
 - [Business case](docs/BUSINESS_CASE.md)

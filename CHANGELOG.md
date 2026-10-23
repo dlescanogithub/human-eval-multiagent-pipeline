@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add narrated English demo video (`human_eval_multiagent_pipeline_demo_en.mp4`) with subtitles and evidence pack under `docs/demo/`.
 - Removed interview framing. [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) is a walkthrough for engineers and buyers, and the README docs list no longer calls it an interview walkthrough. A repo-wide search found no Spanish prose. The pending IP checklist in [docs/IP_AND_PROVENANCE.md](docs/IP_AND_PROVENANCE.md) is unchanged and still open. No code change.
 - README is English only. Added [docs/BUSINESS_VALUE.md](docs/BUSINESS_VALUE.md). [docs/HOW_IT_WORKS.md](docs/HOW_IT_WORKS.md) is in English and matches the current tree. The pending IP checklist in [docs/IP_AND_PROVENANCE.md](docs/IP_AND_PROVENANCE.md) is unchanged and still open. No code change.
 - Pytest re-measured on 2026-10-22, Python 3.12.3, pytest 9.1.1, package 0.1.3, code at `228dd93981cc1805d627d7b6f1248caa999618de`: 67 passed, line coverage 89.06%. Command `python -m pytest --cov=hemp --cov-report=term-missing --cov-report=json:coverage.json`, with the project floor of 80%. Same totals as the 2026-10-17 line. pytest-cov printed that module hemp was previously imported and not measured. The 89.06% figure is the total it printed.
