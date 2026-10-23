@@ -1,0 +1,41 @@
+1
+00:00:00,900 --> 00:00:05,520
+A multi-agent course writer with a human review queue, on a fake cassette.
+
+2
+00:00:05,570 --> 00:00:10,220
+One hundred percent synthetic. This demo does not call a paid A-P-I.
+
+3
+00:00:11,550 --> 00:00:18,420
+Nortia Learning, Foundations of Fictional Logistics. Four lessons accepted and
+published with synthetic raters.
+
+4
+00:00:19,690 --> 00:00:27,040
+Agreement demo on forty-eight synthetic items. Cohen's kappa careful versus
+moderate about zero point three eight.
+
+5
+00:00:27,120 --> 00:00:33,730
+Fleiss about zero point one seven six. These numbers demonstrate the metric
+code. They are not a human study.
+
+6
+00:00:35,020 --> 00:00:44,890
+Simulated cost about forty-eight dollars total, twelve per approved piece,
+versus a three hundred twenty dollar all-human baseline. [EST] rates.
+
+7
+00:00:46,110 --> 00:00:51,100
+Use it to wire generate, review, and agreement before any live writer spend.
+
+8
+00:00:51,200 --> 00:01:00,500
+Not covered: real human agreement, a production LMS, or live quality. Live was
+only tried at n equals one and three outside C-I.
+
+9
+00:01:00,530 --> 00:01:05,130
+Run python -m hemp demo. Lab path cost: zero.
+

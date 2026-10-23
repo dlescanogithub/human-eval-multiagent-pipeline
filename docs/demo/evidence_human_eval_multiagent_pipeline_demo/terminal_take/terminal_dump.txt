@@ -1,0 +1,49 @@
+hemp $ python -m hemp demo 2>/dev/null | tee /tmp/hemp_demo.txt | head -20
+Nortia Learning — Foundations of Fictional Logistics
+100% synthetic; fictional domain. This demo does not call a paid API.
+approval_basis=synthetic published=4 pending=0
+- L1: writer_calls=1 accepted=True published=True raters=2
+- L2: writer_calls=2 accepted=True published=True raters=2
+- L3: writer_calls=1 accepted=True published=True raters=2
+- L4: writer_calls=1 accepted=True published=True raters=3
+simulated cost total_usd=48.041 per_approved=12.01025 all_human_baseline=320.0 [EST rates]
+Course-queue labels are a 4-item synthetic fixture, not an agreement result.
+COMPUTATION DEMO — synthetic raters, not a human study
+n_items=48 panel_seed=20261017 bootstrap_seed=20261018
+Raters copy a seeded gold label at the design match rate, else they flip it.
+- careful: design_match_rate=0.9 realized_match_rate=0.9583333333333334
+- moderate: design_match_rate=0.75 realized_match_rate=0.7708333333333334
+- noisy: design_match_rate=0.55 realized_match_rate=0.5833333333333334
+cohens_kappa_careful_moderate=0.38339920948616585 ci95=[0.12068965517241367, 0.6679841897233201]
+cohens_kappa_careful_noisy=0.08333333333333326 ci95=[-0.17073170731707324, 0.34065934065934056]
+cohens_kappa_moderate_noisy=0.125 ci95=[-0.125, 0.39459459459459456]
+fleiss_kappa=0.1763023493360571 ci95=[-0.016333938294010888, 0.3565957446808512]
+krippendorff_alpha_nominal=0.18202247191011234 ci95=[-0.029835390946502116, 0.36559790280298443]
+hemp $ clear
+[H[2J[3Jhemp $ sed -n '1,12p' /tmp/hemp_demo.txt
+Nortia Learning — Foundations of Fictional Logistics
+100% synthetic; fictional domain. This demo does not call a paid API.
+approval_basis=synthetic published=4 pending=0
+- L1: writer_calls=1 accepted=True published=True raters=2
+- L2: writer_calls=2 accepted=True published=True raters=2
+- L3: writer_calls=1 accepted=True published=True raters=2
+- L4: writer_calls=1 accepted=True published=True raters=3
+simulated cost total_usd=48.041 per_approved=12.01025 all_human_baseline=320.0 [EST rates]
+Course-queue labels are a 4-item synthetic fixture, not an agreement result.
+COMPUTATION DEMO — synthetic raters, not a human study
+n_items=48 panel_seed=20261017 bootstrap_seed=20261018
+Raters copy a seeded gold label at the design match rate, else they flip it.
+hemp $ clear
+[H[2J[3Jhemp $ grep -E 'kappa|fleiss|krippendorff|COMPUTATION|n_items' /tmp/hemp_demo.txt
+COMPUTATION DEMO — synthetic raters, not a human study
+n_items=48 panel_seed=20261017 bootstrap_seed=20261018
+cohens_kappa_careful_moderate=0.38339920948616585 ci95=[0.12068965517241367, 0.6679841897233201]
+cohens_kappa_careful_noisy=0.08333333333333326 ci95=[-0.17073170731707324, 0.34065934065934056]
+cohens_kappa_moderate_noisy=0.125 ci95=[-0.125, 0.39459459459459456]
+fleiss_kappa=0.1763023493360571 ci95=[-0.016333938294010888, 0.3565957446808512]
+krippendorff_alpha_nominal=0.18202247191011234 ci95=[-0.029835390946502116, 0.36559790280298443]
+COMPUTATION DEMO. Raters are synthetic. These numbers demonstrate the metric code. They are not real human agreement and this is not a human study.
+hemp $ clear
+[H[2J[3Jhemp $ grep -E 'simulated cost|per_approved|baseline' /tmp/hemp_demo.txt
+simulated cost total_usd=48.041 per_approved=12.01025 all_human_baseline=320.0 [EST rates]
+hemp $ 
